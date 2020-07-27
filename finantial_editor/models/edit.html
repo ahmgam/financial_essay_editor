@@ -4,62 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+  <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <script>
-
-    function mEnter(m)
-    {
-        window.alert(m.getAttribute("id"));
-    }
-    function mLeave(m)
-    {
-        window.alert(m.getAttribute("id"));
-    }
-
-     function addBlock(){
-
-        c=document.querySelector("#test").childElementCount;
-        var newele= document.createElement("div");
-        newele.setAttribute("id","element"+String(c+1));
-        newele.setAttribute("class","col-xs-12 col-sm-12");
-        newele.setAttribute("onmouseenter","mEnter(this)");
-        newele.setAttribute("onmouseleave","mLeave(this)");
-        newele.setAttribute("style","background-color:lavender;height: 100px;");
-        newele.innerText="new element";
-        document.querySelector("#test").append(newele);
-        
-
-     }
-     function hide ()
-     {
-        var x = document.getElementById("element1");
-        if (x.style.display === "none") 
-        {
-            x.style.display = "block";
-        } 
-        else 
-        {
-            x.style.display = "none";
-        }
-
-     }
-      
-  </script>
+  <script src="editPageScript.js"></script>
 
 </head>
 <body>
 
 <div id="test" class="container-fluid">
  
-    <div id="element1" class="col-xs-12 col-sm-12" style="background-color:lavender;height: 100px;">Block 1</div>
-    <div id="element2" class="col-xs-12 col-sm-12" style="background-color:green;height: 100px;">Block 2</div>
-    <div id="element3" class="col-xs-12 col-sm-12" style="background-color:yellow;height: 100px;">Block 3</div>
+    <div id="element1" class="row" style="background-color:lavender;height: 100px;">Block 1</div>
+    <div id="element2" class="row" style="background-color:green;height: 100px;">Block 2</div>
+    <div id="element3" class="row" style="background-color:yellow;height: 100px;">Block 3</div>
       
 
 </div>
 <button onclick="addBlock()">add block</button> 
-<button onclick="hide()">add block</button> 
 
 
 
