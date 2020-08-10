@@ -1,3 +1,4 @@
+
 function mEnter(m)
     {
         //window.alert(m.getAttribute("id"));
@@ -39,7 +40,7 @@ function mEnter(m)
         y.style.display = "block";
         var content = document.getElementById(id+"TX");
         window.alert();
-        var simplemde = new SimpleMDE({ element: document.getElementById("E"+String(c+1)+"TX") });
+        var simplemde =  SimpleMDE.
 
         y.innerHTML = simplemde.value();
     }
@@ -131,5 +132,5 @@ function mEnter(m)
 
         document.querySelector("#test").append(newele);
         //Simplemde editor declaration
-        var simplemde = new SimpleMDE({ element: document.getElementById("E"+String(c+1)+"TX") });
+        //var simplemde = new SimpleMDE({ element: document.getElementById("E"+String(c+1)+"TX") });
         }
