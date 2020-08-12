@@ -66,31 +66,22 @@ function doneBlock(m)
           x.style.display = "none";
           var y = document.getElementById(id+"MP");
           y.style.display = "block";
-          var content = document.getElementById(id+"TX");
+          var content = document.getElementById(id+"BB");
           var prev = document.getElementById(id+"PA");
           var img = document.createElement("img");
-          img.setAttribute("src",content.value);
-          if (prev.childElementCount==1)
-          {prev.firstChild.remove();}
+          var fReader = new FileReader();
+          fReader.readAsDataURL(content.files[0]);
+          
+          //img.setAttribute("src",content.value);
+          if (prev.childElementCount==1){prev.firstChild.remove();}
+          fReader.onloadend = function(event){img.src = event.target.result;}
           prev.appendChild(img);
           var d = document.querySelector("#"+id+"ME");
           d.style.display="none";
         }
         
     }
-function browseEvent(m)
-{
-  var myid=String (m.getAttribute("id"));
-  var id=myid.substring(0,myid.length-2);
-  var x = document.getElementById(id+"TX");
-  if (m.value==""){}
-  else {
-    x.value = m.value;
-  
-  }
-  //window.alert(String("dd") + "," + String(m))
-  
-}
+
 
 function addBlock(){
 
@@ -233,11 +224,7 @@ function addImage()
 
 
         
-        //textbox div area
-        var txtarea = document.createElement("div");
-        txtarea.className="col-md-6";
-        txtarea.setAttribute("class","col-md-6");
-        txtarea.setAttribute("style","background-color:lavender;display:block;width: 40%;");
+
         //done button div
         var btnDonear = document.createElement("div");
         btnDonear.className="col-md-6";
@@ -275,11 +262,7 @@ function addImage()
         btnDone.innerText="Done";
         btnDone.id="E"+String(c+1)+"SB";
         btnDone.className="btn btn-success";
-        //create editor 
-        var txtbx= document.createElement("textarea");
-        txtbx.id="E"+String(c+1)+"TX";
-        txtbx.setAttribute("onkeyup","autoheight(this)");
-        txtbx.setAttribute("style","border: none;resize:none;width:100%;");
+  
         //browse button
         var btnBrowse = document.createElement("button");
         btnBrowse.innerText="Browse";
@@ -290,8 +273,7 @@ function addImage()
         browseInput.id="E"+String(c+1)+"BB";
         browseInput.setAttribute("type","file")
         browseInput.setAttribute("accept","image/x-png,image/gif,image/jpeg")
-        browseInput.onchange=browseEvent(browseInput);
-        browseInput.setAttribute("onchange","browseEvent(this)")
+
    
 
         //combining all together
@@ -301,9 +283,8 @@ function addImage()
         btnEditar.appendChild(btnEdit);
         btnDonear.appendChild(btnBrowse);
         btnDonear.appendChild(btnDone);
-        txtarea.appendChild(txtbx);
 
-        main_edit_area.appendChild(txtarea);
+
 
         main_edit_area.appendChild(btnDonear);
         main_preview_area.appendChild(prvarea);
@@ -320,7 +301,7 @@ document.addEventListener('input', function (event) {
 	// Only run if the change happened in the #editor
     var event_id=String (event.target.id);
     var e_id=event_id.substring(0,event_id.length-2)+'IP';
-    var mode = event.target.getAttribute("data");
+    var mode =document.getElementById(event_id.substring(0,event_id.length-2)).getAttribute("data");
     if (mode=="text")
     {
       var compiled = document.querySelector('#'+String(e_id));
