@@ -1,4 +1,43 @@
+/*
+Id notations : 
+every Id consist of : 
+1- "E" in the begining
+2- number of item , the E and the number is the id of the whole element
+3- last 2 charachters distinguishes the element components as following :
+- "ME" : main edit area
+- "Mp" : main preview area
+- "DD" : donne button div
+- "IP" : initial preview div
+- "PA" : preview area div
+- "ED" : edit buttons div
+- "EB" : edit button 
+- "DB" : delete button
+- "SB" : done editing button
+- "Tx" : textarea of text block
+- "BI" : Browse button input 
+- "MC" : main table creation div
+- "RT" : input of rows number of table
+- "CT" : input of columns number of table
+- "CB" : Create button
+- "TE" : table edit div
+- "TP" : table preview div
+- "TB" : table
 
+*/
+
+
+document.addEventListener('input', function (event) {
+	// Only run if the change happened in the #editor
+    var event_id=String (event.target.id);
+    var myId=event_id.substring(0,event_id.length-2);
+    if (event_id.endsWith("TX")==true)
+    {
+      var compiled = document.querySelector('#'+String(myId+"IP"));
+      compiled.innerHTML = marked(String(event.target.value), { sanitize: true });
+    }
+    
+
+}, false);
 
 function autoheight(x) {
     x.style.height = "5px";
@@ -25,6 +64,63 @@ function mEnter(m)
   
     }
    */
+function createTable(m)
+{
+  var myid=String (m.getAttribute("id"));
+  var id=myid.substring(0,myid.length-2);
+  var tableRows =parseInt(document.getElementById(id+"RT").value);
+  var tableCols =parseInt(document.getElementById(id+"CT").value);
+  var myTable = document.createElement("TABLE");
+  var myTableHeader = document.createElement("thead");
+  var myTableBody = document.createElement("tbody");
+  
+  myTable.className="table";
+  for (var i = 1 ; i< tableRows+1;i++)
+  {
+    var myRow = document.createElement("TR");
+    for (var j = 1 ; j< tableCols+1; j++)
+    {
+      var myCol ;
+      if (i==1 || j==1)
+      {
+        myCol= document.createElement("TH");
+        myCol.setAttribute("scope","row");
+      }
+      else {myCol= document.createElement("TD");}
+      var tableInput = document.createElement("input");
+      tableInput.id = id+ "T"+ String(i) + ":" + String(j);
+      tableInput.style.border="none";
+      tableInput.style.resize="none";
+      tableInput.type="text";
+      if (i==1)
+      {
+
+      }
+
+      if (j==1)
+      {
+        
+      }
+      myCol.appendChild(tableInput);
+      myRow.appendChild(myCol);
+    }
+    if (i==1)
+    {
+      myRow.setAttribute("scope","col");
+      myTableHeader.appendChild(myRow);
+    }
+    else {myTableBody.appendChild(myRow);}
+  }
+  myTable.appendChild(myTableHeader);
+  myTable.appendChild(myTableBody);
+  var tableEditArea = document.getElementById(id+"TE");
+  tableEditArea.appendChild(myTable);
+  var createArea = document.getElementById(id+"MC");
+  createArea.style.display="none";
+  var editArea = document.getElementById(id+"ME");
+  editArea.style.display="block";
+  
+}
 function editBlock(m)
     {
         var myid=String (m.getAttribute("id"));
@@ -34,6 +130,7 @@ function editBlock(m)
         var y = document.getElementById(id+"ME");
         y.style.display = "block";
     }
+
 function deleteBlock(m)
     {
         var myid=String (m.getAttribute("id"));
@@ -41,6 +138,7 @@ function deleteBlock(m)
         var x = document.querySelector("#"+id);
         x.remove();
     }
+
 function doneBlock(m)
     {
         var myid=String (m.getAttribute("id"));
@@ -66,7 +164,7 @@ function doneBlock(m)
           x.style.display = "none";
           var y = document.getElementById(id+"MP");
           y.style.display = "block";
-          var content = document.getElementById(id+"BB");
+          var content = document.getElementById(id+"BI");
           var prev = document.getElementById(id+"PA");
           var img = document.createElement("img");
           var fReader = new FileReader();
@@ -79,9 +177,47 @@ function doneBlock(m)
           var d = document.querySelector("#"+id+"ME");
           d.style.display="none";
         }
+        if (mode=="table")
+        {
+          document.getElementById(id + "TP").innerHTML="";
+          var myTable = document.createElement("TABLE");
+          var myTableHeader = document.createElement("thead");
+          var myTableBody = document.createElement("tbody");
+          var tableRows =parseInt(document.getElementById(id+"RT").value);
+          var tableCols =parseInt(document.getElementById(id+"CT").value);
+          myTable.className="table";
+          for (var i = 1 ; i< tableRows+1;i++)
+          {
+            var myRow = document.createElement("TR");
+            for (var j = 1 ; j< tableCols+1; j++)
+            {
+             var myCol ;
+              if (i==1 || j==1)
+              {
+                myCol= document.createElement("TH");
+                myCol.setAttribute("scope","row");
+              }
+              else {myCol= document.createElement("TD");}
+              var tableInput = document.getElementById(id+ "T"+ String(i) + ":" + String(j));
+              myCol.appendChild(document.createTextNode(tableInput.value));
+              myRow.appendChild(myCol);
+            }
+            if (i==1)
+            {
+              myRow.setAttribute("scope","col");
+              myTableHeader.appendChild(myRow);
+            }
+            else {myTableBody.appendChild(myRow);}
+          }
+          myTable.appendChild(myTableHeader);
+          myTable.appendChild(myTableBody);
+          var tableEditArea = document.getElementById(id+"TP");
+          tableEditArea.appendChild(myTable);
+          document.getElementById(id+"ME").style.display="none";
+          document.getElementById(id+"MP").style.display="block";
+        }
         
     }
-
 
 function addBlock(){
 
@@ -266,11 +402,10 @@ function addImage()
         //browse button
         var btnBrowse = document.createElement("button");
         btnBrowse.innerText="Browse";
-        btnBrowse.setAttribute("for","E"+String(c+1)+"BB");
         btnBrowse.className="btn btn-info";
         //browse input 
         var browseInput = document.createElement("input");
-        browseInput.id="E"+String(c+1)+"BB";
+        browseInput.id="E"+String(c+1)+"BI";
         browseInput.setAttribute("type","file")
         browseInput.setAttribute("accept","image/x-png,image/gif,image/jpeg")
 
@@ -295,19 +430,141 @@ function addImage()
         newele.appendChild(main_preview_area);
         document.querySelector("#blocks").append(newele);
 }
- 
-// Listen for changes to inputs and textareas
-document.addEventListener('input', function (event) {
-	// Only run if the change happened in the #editor
-    var event_id=String (event.target.id);
-    var e_id=event_id.substring(0,event_id.length-2)+'IP';
-    var mode =document.getElementById(event_id.substring(0,event_id.length-2)).getAttribute("data");
-    if (mode=="text")
-    {
-      var compiled = document.querySelector('#'+String(e_id));
-      compiled.innerHTML = marked(String(event.target.value), { sanitize: true });
-    }
-    
 
-}, false);
+function addTable()
+ {
+  c=document.querySelector("#blocks").childElementCount;
+  if (c!=0)
+  {
+  last_id = String(document.getElementById("blocks").children[c-1].getAttribute("id"));
+  last_id= last_id.substring(1,last_id.length);
+  c = parseInt(last_id);
+  }
+  //create box 
+  var newele= document.createElement("DIV");
+  newele.id="E"+String(c+1);
+  newele.className="row";
+  //newele.setAttribute("onmouseenter","mEnter(this)");
+  //newele.setAttribute("onmouseleave","mLeave(this)");
+  newele.setAttribute("style","background-color:lavender;margin: 10px;border-radius: 10px;");
+  newele.setAttribute("data","table");
+
+  //create main creation area
+  var main_create_area = document.createElement("DIV");
+  main_create_area.className="row";
+  main_create_area.id="E"+String(c+1)+"MC";
+  main_create_area.setAttribute("style","background-color:lavender;");
+  
+  //create main edit area
+  var main_edit_area = document.createElement("DIV");
+  main_edit_area.className="row";
+  main_edit_area.id="E"+String(c+1)+"ME";
+  main_edit_area.setAttribute("style","background-color:lavender;");
+  main_edit_area.style.display="none";
+  //create main preview area
+  var main_preview_area = document.createElement("DIV");
+  main_preview_area.className="row";
+  main_preview_area.id="E"+String(c+1)+"MP";
+  main_preview_area.setAttribute("style","background-color:lavender;display:none;");
+  main_preview_area.style.display="none";
+
+  //table size input notations
+  var creationText = document.createElement("p");
+  creationText.innerText="Pleaes enter number of rows and columns : ";
+  
+  // table row input
+  var txtRows= document.createElement("input");
+  txtRows.id="E"+String(c+1)+"RT";
+  txtRows.setAttribute("onkeyup","autoheight(this)");
+  txtRows.setAttribute("type","number");
+  txtRows.setAttribute("style","border: none;resize:none;width:60px;"); 
+  
+  // just notations 
+  var x = document.createElement("p");
+  x.innerText="×";
+
+  //table col input
+  var txtCols= document.createElement("input");
+  txtCols.id="E"+String(c+1)+"CT";
+  txtCols.setAttribute("onkeyup","autoheight(this)");
+  txtCols.setAttribute("type","number");
+  txtCols.setAttribute("style","border: none;resize:none;width:60px;"); 
+
+  //Crete button
+  var btnCreate = document.createElement("button");
+  btnCreate.setAttribute("onclick","createTable(this)");
+  btnCreate.innerText="Done";
+  btnCreate.id="E"+String(c+1)+"CB";
+  btnCreate.className="btn btn-success";
+ 
+  //table edit div
+  var tableEdit = document.createElement("DIV");
+  tableEdit.className="col-md-6";
+  tableEdit.id="E"+String(c+1)+"TE";
+  tableEdit.setAttribute("style","background-color:lavender;");
+ 
+  //done button div
+  var btnDonear = document.createElement("div");
+  btnDonear.className="col-md-6";
+  btnDonear.id="E"+String(c+1)+"DD";
+
+  //done button 
+  var btnDone = document.createElement("button");
+  btnDone.setAttribute("onclick","doneBlock(this)");
+  btnDone.innerText="Done";
+  btnDone.id="E"+String(c+1)+"SB";
+  btnDone.className="btn btn-success";
+
+ 
+  //table preview div
+  var tablePreview = document.createElement("DIV");
+  tablePreview.className="col-md-6";
+  tablePreview.id="E"+String(c+1)+"TP";
+  tablePreview.setAttribute("style","background-color:lavender;");
+
+  //button edit div
+  var btnEditar = document.createElement("div");
+  btnEditar.className="col-md-6";
+  btnEditar.id="E"+String(c+1)+"ED";
+
+  
+  //edit button
+  var btnEdit = document.createElement("button");
+  btnEdit.setAttribute("onclick","editBlock(this)");
+  btnEdit.innerText="Edit";
+  btnEdit.id="E"+String(c+1)+"EB";
+  btnEdit.className="btn btn-info";
+ 
+
+  //delete button
+  var btnDel = document.createElement("button");
+  btnDel.setAttribute("onclick","deleteBlock(this)");
+  btnDel.innerText="Delete";
+  btnDel.id="E"+String(c+1)+"DB";
+  btnDel.className="btn btn-danger";
+
+
+  main_create_area.appendChild(creationText);
+  main_create_area.appendChild(txtRows);
+  main_create_area.appendChild(x);
+  main_create_area.appendChild(txtCols);
+  main_create_area.appendChild(btnCreate);
+
+  btnDonear.appendChild(btnDone);
+  main_edit_area.appendChild(tableEdit);
+  main_edit_area.appendChild(btnDonear);
+
+  btnEditar.appendChild(btnEdit);
+  btnEditar.appendChild(btnDel);
+  main_preview_area.appendChild(tablePreview);
+  main_preview_area.appendChild(btnEditar);
+
+  newele.appendChild(main_create_area);
+  newele.appendChild(main_edit_area);
+  newele.appendChild(main_preview_area);
+
+  document.querySelector("#blocks").append(newele);
+
+ }
+// Listen for changes to inputs and textareas
 
