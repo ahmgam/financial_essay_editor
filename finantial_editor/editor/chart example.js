@@ -1,11 +1,11 @@
-var tickers = {{'name': 'Microsoft Corp', 'symbol': 'MSFT'}
-{'name': 'Apple Inc', 'symbol': 'AAPL'}
-{'name': 'Amazoncom Inc', 'symbol': 'AMZN'}
-{'name': 'Alphabet Inc Class C', 'symbol': 'GOOG'}
-{'name': 'Alphabet Inc Class A', 'symbol': 'GOOGL'}
-{'name': 'Facebook Inc', 'symbol': 'FB'}
-{'name': 'Vodafone Group Public Limited Company', 'symbol': 'VOD'}
-{'name': 'Intel Corp', 'symbol': 'INTC'}};
+var tickers = [['Microsoft Corp',  'MSFT'],
+[ 'Apple Inc',  'AAPL'],
+['Amazoncom Inc', 'AMZN'],
+[ 'Alphabet Inc Class C',  'GOOG'],
+['Alphabet Inc Class A', 'GOOGL'],
+['Facebook Inc',  'FB'],
+[ 'Vodafone Group Public Limited Company','VOD'],
+['Intel Corp', 'INTC']];
 
 var  seriesData = [
     {

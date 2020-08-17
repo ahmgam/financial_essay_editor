@@ -22,9 +22,21 @@ every Id consist of :
 - "TE" : table edit div
 - "TP" : table preview div
 - "TB" : table
+- "TS" : ticker select
+- "DF" : start date of ticker data
+- "DT" : end date of ticker data
+- "CC" : candles chart
+- "VC" : volume chart
 
 */
-
+var tickers = [['Microsoft Corp',  'MSFT'],
+[ 'Apple Inc',  'AAPL'],
+['Amazoncom Inc', 'AMZN'],
+[ 'Alphabet Inc Class C',  'GOOG'],
+['Alphabet Inc Class A', 'GOOGL'],
+['Facebook Inc',  'FB'],
+[ 'Vodafone Group Public Limited Company','VOD'],
+['Intel Corp', 'INTC']];
 
 document.addEventListener('input', function (event) {
 	// Only run if the change happened in the #editor
@@ -216,7 +228,134 @@ function doneBlock(m)
           document.getElementById(id+"ME").style.display="none";
           document.getElementById(id+"MP").style.display="block";
         }
-        
+        if (mode=="chart")
+        {
+          var selectedTicker = document.getElementById(id+"TS").options[selectedTicker.selectedIndex].value;
+          var selectedStartDate= document.getElementById(id+"DF").value;
+          var selectedEndDate= document.getElementById(id+"DE").value;
+          var currentURL = window.location.href;
+          var xmlhttp = new XMLHttpRequest();
+          var url = currentURL+"chart_preview/?ticker="+String(selectedTicker)+"&start_date="+String(selectedStartDate)+"&end_date="+String(selectedEndDate);
+          var data;
+          xmlhttp.onreadystatechange = function() {if (this.readyState == 4 && this.status == 200) {data = JSON.parse(this.responseText);}};
+          xmlhttp.open("GET", url, false);
+          xmlhttp.send();
+          if (data.error=="undefined")
+          {
+            
+            var options = {
+  series: [ {
+  name: 'candle',
+  type: 'candlestick',
+  data: data.cData
+}],
+  chart: {
+  height: 350,
+  id: 'candles',
+  type: 'line',
+},
+title: {
+  text: 'CandleStick Chart',
+  align: 'left'
+},
+stroke: {
+  width: [3, 1]
+},
+
+tooltip: {
+  shared: true,
+  custom: [function({seriesIndex, dataPointIndex, w}) {
+    return w.globals.series[seriesIndex][dataPointIndex]
+  }, function({ seriesIndex, dataPointIndex, w }) {
+    var o = w.globals.seriesCandleO[seriesIndex][dataPointIndex]
+    var h = w.globals.seriesCandleH[seriesIndex][dataPointIndex]
+    var l = w.globals.seriesCandleL[seriesIndex][dataPointIndex]
+    var c = w.globals.seriesCandleC[seriesIndex][dataPointIndex]
+    var d =  w.globals.labels[dataPointIndex]
+    return (
+      'date: '+String(Date(d))+'</br>'+'open : '+String(o) + '</br>' + 'close :'+ String(c) + '</br>' + 'highest :' + String(h) + '</br>' + 'lowest :' + String(l)
+    )
+  }]
+},
+xaxis: {
+  type: 'datetime'
+}
+            };
+            var chart = new ApexCharts(document.querySelector("#"+String(id)+"CC"), options);
+            chart.render();
+
+            var optionsBar = {
+  series: [{
+  name: 'volume',
+  data: data.vData
+}],
+  chart: {
+  height: 160,
+  type: 'bar',
+  brush: {
+    enabled: true,
+    target: 'candles'
+  },
+  selection: {
+    enabled: true,
+    xaxis: {
+      min: new Date(1538778600000).getTime(),
+      max: new Date(1538787600000).getTime()
+    },
+    fill: {
+      color: '#ccc',
+      opacity: 0.4
+    },
+    stroke: {
+      color: '#0D47A1',
+    }
+  },
+},
+dataLabels: {
+  enabled: false
+},
+plotOptions: {
+  bar: {
+    columnWidth: '80%',
+    colors: {
+      ranges: [{
+        from: -1000,
+        to: 0,
+        color: '#F15B46'
+      }, {
+        from: 1,
+        to: 10000,
+        color: '#FEB019'
+      }],
+
+    },
+  }
+},
+stroke: {
+  width: 0
+},
+xaxis: {
+  type: 'datetime',
+  axisBorder: {
+    offsetX: 13
+  }
+},
+yaxis: {
+  labels: {
+    show: false
+  }
+}
+            };
+
+            var chartBar = new ApexCharts(document.querySelector("#"+String(id)+"VC"), optionsBar);
+            chartBar.render();
+
+            document.getElementById(id+"ME").style.display="none";
+            document.getElementById(id+"MP").style.display="block";
+          }
+          else {window.alert(data.error)}
+
+        }
     }
 
 function addBlock(){
@@ -590,13 +729,127 @@ function addTable()
   main_edit_area.className="row";
   main_edit_area.id="E"+String(c+1)+"ME";
   main_edit_area.setAttribute("style","background-color:lavender;");
-  main_edit_area.style.display="none";
+
   //create main preview area
   var main_preview_area = document.createElement("DIV");
   main_preview_area.className="row";
   main_preview_area.id="E"+String(c+1)+"MP";
   main_preview_area.setAttribute("style","background-color:lavender;display:none;");
   main_preview_area.style.display="none";
+  //create ticker select combo-box
+  var tickerSelect = document.createElement("select");
+  tickerSelect.type="select-one";
+  tickerSelect.id="E"+String(c+1)+"TS";
+  for (i=0;i<8;i++)
+  {
+    var option = document.createElement("option");
+    option.text=tickers[i][0];
+    option.value=tickers[i][1];
+    tickerSelect.appendChild(option);
+  }
+  //ticker select notathion
+  var tickerNotation = document.createElement("span");
+  tickerNotation.innerText="select ticker from list";
+
+  //create start date input 
+  var dateDiv = document.createElement("div");
+  dateDiv.className="input-daterange input-group";
+  dateDiv.setAttribute("data-provide","datepicker");
+
+  var dateFrom = document.createElement("input");
+  dateFrom.id= "E"+String(c+1)+"DF"
+  dateFrom.defaultValue=Date.now();
+  dateFrom.className="input-sm form-control";
+  dateFrom.name="start";
+  dateFrom.type="text";
+  dateFrom.setAttribute("data-date-format","mm/dd/yyyy");
+  dateFrom.onclick = function (){
+    $('input[id=\"'+String(this.id)+'\"]').datepicker({
+    format: 'dd/mm/yyyy',
+    todayHighlight: true,
+    autoclose: true,
+})
+
+};
+  var toNotation = document.createElement("span");
+  toNotation.innerText="to";
+  toNotation.className="input-group-addon";
+
+  var dateTo = document.createElement("input");
+  dateTo.id= "E"+String(c+1)+"DT"
+  dateTo.defaultValue=Date.now();
+  dateTo.className="input-sm form-control";
+  dateTo.name="end";
+  dateTo.type="text";
+  dateTo.setAttribute("data-date-format","mm/dd/yyyy");
+  dateTo.onclick = function (){
+    $('input[id=\"'+String(this.id)+'\"]').datepicker({
+    format: 'dd/mm/yyyy',
+    todayHighlight: true,
+    autoclose: true,
+})
+
+};
+
+
+  //done button 
+  var btnDone = document.createElement("button");
+  btnDone.setAttribute("onclick","doneBlock(this)");
+  btnDone.innerText="Done";
+  btnDone.id="E"+String(c+1)+"SB";
+  btnDone.className="btn btn-success";
+
+  //button edit div
+  var btnEditar = document.createElement("div");
+  btnEditar.className="col-md-6";
+  btnEditar.id="E"+String(c+1)+"ED";
+  
+    
+  //edit button
+  var btnEdit = document.createElement("button");
+  btnEdit.setAttribute("onclick","editBlock(this)");
+  btnEdit.innerText="Edit";
+  btnEdit.id="E"+String(c+1)+"EB";
+  btnEdit.className="btn btn-info";
+   
+  
+  //delete button
+  var btnDel = document.createElement("button");
+  btnDel.setAttribute("onclick","deleteBlock(this)");
+  btnDel.innerText="Delete";
+  btnDel.id="E"+String(c+1)+"DB";
+  btnDel.className="btn btn-danger";
+
+ 
+  
+  //Candles chart canvas
+  var candleChart = document.createElement("canvas");
+  candleChart.id= "E"+String(c+1) + "CC";
+  
+  //volume chart canvas
+  var volumeChart = document.createElement("canvas");
+  volumeChart.id="E"+ String(c+1)+ "VC";
+
+  dateDiv.appendChild(dateFrom);
+  dateDiv.appendChild(toNotation);
+  dateDiv.appendChild(dateTo);
+
+  btnEditar.appendChild(btnEdit);
+  btnEditar.appendChild(btnDel);
+
+  main_edit_area.appendChild(tickerNotation);
+  main_edit_area.appendChild(tickerSelect);
+  main_edit_area.appendChild(dateDiv);
+  main_edit_area.appendChild(btnDone);
+
+  main_preview_area.appendChild(candleChart);
+  main_preview_area.appendChild(volumeChart);
+
+  newele.appendChild(main_edit_area);
+  newele.appendChild(main_preview_area);
+
+  document.querySelector("#blocks").append(newele);
+
  }
 // Listen for changes to inputs and textareas
 
