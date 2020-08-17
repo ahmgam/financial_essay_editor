@@ -566,5 +566,37 @@ function addTable()
   document.querySelector("#blocks").append(newele);
 
  }
+
+ function addChart()
+ {
+  c=document.querySelector("#blocks").childElementCount;
+  if (c!=0)
+  {
+  last_id = String(document.getElementById("blocks").children[c-1].getAttribute("id"));
+  last_id= last_id.substring(1,last_id.length);
+  c = parseInt(last_id);
+  }
+  //create box 
+  var newele= document.createElement("DIV");
+  newele.id="E"+String(c+1);
+  newele.className="row";
+  //newele.setAttribute("onmouseenter","mEnter(this)");
+  //newele.setAttribute("onmouseleave","mLeave(this)");
+  newele.setAttribute("style","background-color:lavender;margin: 10px;border-radius: 10px;");
+  newele.setAttribute("data","chart");
+
+  //create main edit area
+  var main_edit_area = document.createElement("DIV");
+  main_edit_area.className="row";
+  main_edit_area.id="E"+String(c+1)+"ME";
+  main_edit_area.setAttribute("style","background-color:lavender;");
+  main_edit_area.style.display="none";
+  //create main preview area
+  var main_preview_area = document.createElement("DIV");
+  main_preview_area.className="row";
+  main_preview_area.id="E"+String(c+1)+"MP";
+  main_preview_area.setAttribute("style","background-color:lavender;display:none;");
+  main_preview_area.style.display="none";
+ }
 // Listen for changes to inputs and textareas
 
