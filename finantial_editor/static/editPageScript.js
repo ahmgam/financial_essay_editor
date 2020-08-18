@@ -233,12 +233,12 @@ function doneBlock(m)
           var selectedTicker = document.getElementById(id+"TS");
           selectedTicker=selectedTicker.options[selectedTicker.selectedIndex].value;
           var selectedStartDate= document.getElementById(id+"DF").value;
-          selectedStartDate=String(selectedStartDate).replace("/","-");
-          var selectedEndDate= document.getElementById(id+"DE").value;
-          selectedEndDate=String(selectedEndDate).replace("/","-");
+          selectedStartDate=String(selectedStartDate).replace("/","-").replace("/","-");
+          var selectedEndDate= document.getElementById(id+"DT").value;
+          selectedEndDate=String(selectedEndDate).replace("/","-").replace("/","-");
           var currentURL = window.location.href;
           var xmlhttp = new XMLHttpRequest();
-          var url = currentURL+"chart_preview/?ticker="+String(selectedTicker)+"&start_date="+String(selectedStartDate)+"&end_date="+String(selectedEndDate);
+          var url = String(currentURL)+"chart_preview/?ticker="+String(selectedTicker)+"&start_date="+String(selectedStartDate)+"&end_date="+String(selectedEndDate);
           var data;
           xmlhttp.onreadystatechange = function() {if (this.readyState == 4 && this.status == 200) {data = JSON.parse(this.responseText);}};
           xmlhttp.open("GET", url, false);
@@ -356,7 +356,7 @@ yaxis: {
             document.getElementById(id+"ME").style.display="none";
             document.getElementById(id+"MP").style.display="block";
           }
-          else {window.alert(data.error)}
+          else {window.alert(data)}
 
         }
     }

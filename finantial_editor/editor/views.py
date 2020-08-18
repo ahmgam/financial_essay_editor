@@ -1,26 +1,31 @@
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse
 import requests
+import logging
 from datetime import datetime 
+logger = logging.getLogger(__name__)
 # Create your views here.
 def index (request):
-    return render(request, 'edit/edit.html')
+    return render(request, 'editor/edit.html')
 
 def preview_chart(request):
     
-    start_date,end_date,ticker,stock=""
+    start_date,end_date,ticker,stock="","","",""
     if request.GET.__contains__('start_date') : start_date=request.GET.get('start_date')
     if request.GET.__contains__('end_date') : end_date=request.GET.get('end_date')
     if request.GET.__contains__('ticker') : ticker=request.GET.get('ticker')
     if request.GET.__contains__('stock') : stock=request.GET.get('stock')
-    
+    logger.error("LOG : start date : "+start_date + " end date : "+ end_date + " ticker : "+ ticker)
     
     try:
         s_date = datetime.strptime(start_date, '%d-%m-%Y')
         e_date = datetime.strptime(end_date, '%d-%m-%Y')
-        if e_date.date()>s_date.date():
+        if e_date.date()<s_date.date():
             e_date,s_date=s_date,e_date
+        start_date=s_date.strftime('%Y-%m-%d')
+        end_date=e_date.strftime('%Y-%m-%d')
     except ValueError:
+        logger.error("Dates mismatch : start date : "+start_date + " end date : "+ end_date + " ticker : "+ ticker)
         return {"error":"unvalid date"}
     
     return JsonResponse(getData(start_date,end_date,stock,ticker),safe=False)
@@ -37,25 +42,26 @@ def getData(start_date,end_date,stock,ticker):
             res=processData (r)
         if start_date=="" and end_date!="":
             # get for end date only
-            r = 'http://api.marketstack.com/v1/intraday/'+end_date+'?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker
+            r = 'http://api.marketstack.com/v1/intraday/'+end_date+'T00:00:00+0000?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker
             res=processData (r)
         if end_date=="" and start_date!="":
             # get for start date only
-            r = 'http://api.marketstack.com/v1/intraday/'+start_date+'?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker
+            r = 'http://api.marketstack.com/v1/intraday/'+start_date+'T00:00:00+0000?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker
             res=processData (r)
         if end_date!="" and start_date!="":
             # get for the entire period
             r=""
             if end_date==start_date:
-                r = 'http://api.marketstack.com/v1/intraday/'+start_date+'?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker
+                r = 'http://api.marketstack.com/v1/intraday/'+start_date+'T00:00:00+0000?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker
             else : 
-                 r = 'http://api.marketstack.com/v1/eod/?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker+'&date_from='+start_date+'&date_to='+ end_date
+                 r = 'http://api.marketstack.com/v1/eod/?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker+'&date_from='+start_date+'T00:00:00+0000&date_to='+ end_date+'T00:00:00+0000'
 
             res=processData (r)
         
     return res
 
 def processData (route):
+    logger.error(route)
     candleData = []
     lineData=[]
     offset = 0
@@ -77,6 +83,7 @@ def processData (route):
         offset = int(rawData['pagination']['offset']) + batchSize
 
     totalData={'cData':candleData , 'vData':lineData}
+    logger.error(totalData)
     return totalData
     
 
