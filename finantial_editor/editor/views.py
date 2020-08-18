@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse
 import requests
+from datetime import datetime 
 # Create your views here.
 def index (request):
     return render(request, 'edit/edit.html')
@@ -13,13 +14,22 @@ def preview_chart(request):
     if request.GET.__contains__('ticker') : ticker=request.GET.get('ticker')
     if request.GET.__contains__('stock') : stock=request.GET.get('stock')
     
+    
+    try:
+        s_date = datetime.strptime(start_date, '%d-%m-%Y')
+        e_date = datetime.strptime(end_date, '%d-%m-%Y')
+        if e_date.date()>s_date.date():
+            e_date,s_date=s_date,e_date
+    except ValueError:
+        return {"error":"unvalid date"}
+    
     return JsonResponse(getData(start_date,end_date,stock,ticker),safe=False)
     
 def getData(start_date,end_date,stock,ticker):
     res={}
+    
     if ticker=="" and stock=="":
         res = {'error':'please enter ticker symbol'}
-
     if ticker!="" and stock=="":
         if start_date =="" and end_date =="": 
             # get the latest data 
@@ -35,7 +45,12 @@ def getData(start_date,end_date,stock,ticker):
             res=processData (r)
         if end_date!="" and start_date!="":
             # get for the entire period
-            r = 'http://api.marketstack.com/v1/eod/?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker+'&date_from='+start_date+'&date_to='+ end_date
+            r=""
+            if end_date==start_date:
+                r = 'http://api.marketstack.com/v1/intraday/'+start_date+'?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker
+            else : 
+                 r = 'http://api.marketstack.com/v1/eod/?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker+'&date_from='+start_date+'&date_to='+ end_date
+
             res=processData (r)
         
     return res
