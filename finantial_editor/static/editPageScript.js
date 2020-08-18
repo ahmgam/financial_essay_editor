@@ -278,7 +278,7 @@ function doneBlock(m)
             
             tooltip: {
               shared: true,
-              custom: [function({seriesIndex, dataPointIndex, w}) {
+              custom: [function({series,seriesIndex, dataPointIndex, w}) {
                 return w.globals.series[seriesIndex][dataPointIndex]
               }, function({ seriesIndex, dataPointIndex, w }) {
                 var o = w.globals.seriesCandleO[seriesIndex][dataPointIndex]
@@ -286,13 +286,20 @@ function doneBlock(m)
                 var l = w.globals.seriesCandleL[seriesIndex][dataPointIndex]
                 var c = w.globals.seriesCandleC[seriesIndex][dataPointIndex]
                 var d =  w.globals.labels[dataPointIndex]
+
                 return (
-                  'date: '+String(new Date(d))+'</br>'+'open : '+String(o) + '</br>' + 'close :'+ String(c) + '</br>' + 'highest :' + String(h) + '</br>' + 'lowest :' + String(l)
+                  ('date: '+String(d)+'</br>'+'open : '+String(o) + '</br>' + 'close :'+ String(c) + '</br>' + 'highest :' + String(h) + '</br>' + 'lowest :' + String(l))
                 )
               }]
             },
             xaxis: {
               type: 'datetime'
+            },
+            yaxis: {
+              tooltip: {
+                shared: true,
+                enabled: true
+              }
             }
                         };
                         var chart = new ApexCharts(document.querySelector("#"+String(id)+"CC"), options);
@@ -346,6 +353,18 @@ function doneBlock(m)
             },
             stroke: {
               width: 0
+            }, tooltip: {
+              followCursor: true,
+              shared: true,
+              custom: [function({series,seriesIndex, dataPointIndex, w}) {
+                return w.globals.series[seriesIndex][dataPointIndex]
+              }, function({ seriesIndex, dataPointIndex, w }) {
+                var o = series[seriesIndex][dataPointIndex]
+                var d =  w.globals.labels[dataPointIndex]
+                return (
+                  'date: '+String(d)+'</br>'+'volume : '+String(o) 
+                )
+              }]
             },
             xaxis: {
               type: 'datetime',

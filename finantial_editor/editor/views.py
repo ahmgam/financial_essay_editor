@@ -55,7 +55,7 @@ def getData(start_date,end_date,stock,ticker):
             if end_date==start_date:
                 r = 'http://api.marketstack.com/v1/intraday/'+start_date+'T00:00:00+0000?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker
             else : 
-                 r = 'http://api.marketstack.com/v1/eod/?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker+'&date_from='+start_date+'T00:00:00+0000&date_to='+ end_date+'T00:00:00+0000'
+                 r = 'http://api.marketstack.com/v1/eod/?access_key=27f1205b8dcf44c54526e45b80a7b8f0&symbols='+ticker+'&date_from='+start_date+'T00:00:00+0000&date_to='+ end_date+'T00:00:00+0000&sort=ASC'
 
             res=processData (r)
         
