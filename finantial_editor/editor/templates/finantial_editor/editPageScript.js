@@ -232,7 +232,9 @@ function doneBlock(m)
         {
           var selectedTicker = document.getElementById(id+"TS").options[selectedTicker.selectedIndex].value;
           var selectedStartDate= document.getElementById(id+"DF").value;
+          selectedStartDate=String(selectedStartDate).replace("/","-");
           var selectedEndDate= document.getElementById(id+"DE").value;
+          selectedEndDate=String(selectedEndDate).replace("/","-");
           var currentURL = window.location.href;
           var xmlhttp = new XMLHttpRequest();
           var url = currentURL+"chart_preview/?ticker="+String(selectedTicker)+"&start_date="+String(selectedStartDate)+"&end_date="+String(selectedEndDate);
@@ -755,14 +757,17 @@ function addTable()
   var dateDiv = document.createElement("div");
   dateDiv.className="input-daterange input-group";
   dateDiv.setAttribute("data-provide","datepicker");
+  
+  var nowdate= new Date();
+  nowdate = String(nowdate.getDate())+"/"+String(nowdate.getMonth()+1)+"/"+String(nowdate.getFullYear());
 
   var dateFrom = document.createElement("input");
   dateFrom.id= "E"+String(c+1)+"DF"
-  dateFrom.defaultValue=Date.now();
+  dateFrom.defaultValue=nowdate;
   dateFrom.className="input-sm form-control";
   dateFrom.name="start";
   dateFrom.type="text";
-  dateFrom.setAttribute("data-date-format","mm/dd/yyyy");
+  dateFrom.setAttribute("data-date-format","dd/mm/yyyy");
   dateFrom.onclick = function (){
     $('input[id=\"'+String(this.id)+'\"]').datepicker({
     format: 'dd/mm/yyyy',
@@ -777,11 +782,11 @@ function addTable()
 
   var dateTo = document.createElement("input");
   dateTo.id= "E"+String(c+1)+"DT"
-  dateTo.defaultValue=Date.now();
+  dateTo.defaultValue=nowdate;
   dateTo.className="input-sm form-control";
   dateTo.name="end";
   dateTo.type="text";
-  dateTo.setAttribute("data-date-format","mm/dd/yyyy");
+  dateTo.setAttribute("data-date-format","dd/mm/yyyy");
   dateTo.onclick = function (){
     $('input[id=\"'+String(this.id)+'\"]').datepicker({
     format: 'dd/mm/yyyy',
