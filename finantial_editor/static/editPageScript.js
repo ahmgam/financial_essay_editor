@@ -230,6 +230,13 @@ function doneBlock(m)
         }
         if (mode=="chart")
         {
+          if (document.getElementById(id + "CC").innerHTML!="")
+          {
+
+            document.getElementById(id + "CC").innerHTML="";
+            document.getElementById(id + "VC").innerHTML="";
+            document.getElementById(id + "MP").lastChild.remove();
+          }
           var selectedTicker = document.getElementById(id+"TS");
           selectedTicker=selectedTicker.options[selectedTicker.selectedIndex].value;
           var selectedStartDate= document.getElementById(id+"DF").value;
@@ -239,124 +246,126 @@ function doneBlock(m)
           var currentURL = window.location.href;
           var xmlhttp = new XMLHttpRequest();
           var url = String(currentURL)+"chart_preview/?ticker="+String(selectedTicker)+"&start_date="+String(selectedStartDate)+"&end_date="+String(selectedEndDate);
-          var data;
+          var data={};
           xmlhttp.onreadystatechange = function() {if (this.readyState == 4 && this.status == 200) {data = JSON.parse(this.responseText);}};
           xmlhttp.open("GET", url, false);
           xmlhttp.send();
-          if (data.error=="undefined")
+          data=JSON.parse(data);
+          if ("error" in data)
           {
-            
-            var options = {
-  series: [ {
-  name: 'candle',
-  type: 'candlestick',
-  data: data.cData
-}],
-  chart: {
-  height: 350,
-  id: 'candles',
-  type: 'line',
-},
-title: {
-  text: 'CandleStick Chart',
-  align: 'left'
-},
-stroke: {
-  width: [3, 1]
-},
-
-tooltip: {
-  shared: true,
-  custom: [function({seriesIndex, dataPointIndex, w}) {
-    return w.globals.series[seriesIndex][dataPointIndex]
-  }, function({ seriesIndex, dataPointIndex, w }) {
-    var o = w.globals.seriesCandleO[seriesIndex][dataPointIndex]
-    var h = w.globals.seriesCandleH[seriesIndex][dataPointIndex]
-    var l = w.globals.seriesCandleL[seriesIndex][dataPointIndex]
-    var c = w.globals.seriesCandleC[seriesIndex][dataPointIndex]
-    var d =  w.globals.labels[dataPointIndex]
-    return (
-      'date: '+String(Date(d))+'</br>'+'open : '+String(o) + '</br>' + 'close :'+ String(c) + '</br>' + 'highest :' + String(h) + '</br>' + 'lowest :' + String(l)
-    )
-  }]
-},
-xaxis: {
-  type: 'datetime'
-}
-            };
-            var chart = new ApexCharts(document.querySelector("#"+String(id)+"CC"), options);
-            chart.render();
-
-            var optionsBar = {
-  series: [{
-  name: 'volume',
-  data: data.vData
-}],
-  chart: {
-  height: 160,
-  type: 'bar',
-  brush: {
-    enabled: true,
-    target: 'candles'
-  },
-  selection: {
-    enabled: true,
-    xaxis: {
-      min: new Date(1538778600000).getTime(),
-      max: new Date(1538787600000).getTime()
-    },
-    fill: {
-      color: '#ccc',
-      opacity: 0.4
-    },
-    stroke: {
-      color: '#0D47A1',
-    }
-  },
-},
-dataLabels: {
-  enabled: false
-},
-plotOptions: {
-  bar: {
-    columnWidth: '80%',
-    colors: {
-      ranges: [{
-        from: -1000,
-        to: 0,
-        color: '#F15B46'
-      }, {
-        from: 1,
-        to: 10000,
-        color: '#FEB019'
-      }],
-
-    },
-  }
-},
-stroke: {
-  width: 0
-},
-xaxis: {
-  type: 'datetime',
-  axisBorder: {
-    offsetX: 13
-  }
-},
-yaxis: {
-  labels: {
-    show: false
-  }
-}
-            };
-
-            var chartBar = new ApexCharts(document.querySelector("#"+String(id)+"VC"), optionsBar);
-            chartBar.render();
-
-            document.getElementById(id+"ME").style.display="none";
-            document.getElementById(id+"MP").style.display="block";
+            window.alert("error getting data")
           }
-          else {window.alert(data)}
+          else 
+          {
+            var options = {
+              series: [ {
+              name: 'candle',
+              type: 'candlestick',
+              data: data.cData
+            }],
+              chart: {
+              height: 350,
+              id: id+'OC',
+              type: 'line',
+            },
+            title: {
+              text: 'CandleStick Chart',
+              align: 'left'
+            },
+            stroke: {
+              width: [3, 1]
+            },
+            
+            tooltip: {
+              shared: true,
+              custom: [function({seriesIndex, dataPointIndex, w}) {
+                return w.globals.series[seriesIndex][dataPointIndex]
+              }, function({ seriesIndex, dataPointIndex, w }) {
+                var o = w.globals.seriesCandleO[seriesIndex][dataPointIndex]
+                var h = w.globals.seriesCandleH[seriesIndex][dataPointIndex]
+                var l = w.globals.seriesCandleL[seriesIndex][dataPointIndex]
+                var c = w.globals.seriesCandleC[seriesIndex][dataPointIndex]
+                var d =  w.globals.labels[dataPointIndex]
+                return (
+                  'date: '+String(new Date(d))+'</br>'+'open : '+String(o) + '</br>' + 'close :'+ String(c) + '</br>' + 'highest :' + String(h) + '</br>' + 'lowest :' + String(l)
+                )
+              }]
+            },
+            xaxis: {
+              type: 'datetime'
+            }
+                        };
+                        var chart = new ApexCharts(document.querySelector("#"+String(id)+"CC"), options);
+                        chart.render();
+            
+                        var optionsBar = {
+              series: [{
+              name: 'volume',
+              data: data.vData
+            }],
+              chart: {
+              height: 160,
+              type: 'bar',
+              brush: {
+                enabled: true,
+                target: id+'OC'
+              },
+              selection: {
+                enabled: true,
+                xaxis: {
+                  type: 'datetime'
+                },
+                fill: {
+                  color: '#ccc',
+                  opacity: 0.4
+                },
+                stroke: {
+                  color: '#0D47A1',
+                }
+              },
+            },
+            dataLabels: {
+              enabled: false
+            },
+            plotOptions: {
+              bar: {
+                columnWidth: '80%',
+                colors: {
+                  ranges: [{
+                    from: -1000,
+                    to: 0,
+                    color: '#F15B46'
+                  }, {
+                    from: 1,
+                    to: 10000,
+                    color: '#FEB019'
+                  }],
+            
+                },
+              }
+            },
+            stroke: {
+              width: 0
+            },
+            xaxis: {
+              type: 'datetime',
+              axisBorder: {
+                offsetX: 13
+              }
+            },
+            yaxis: {
+              labels: {
+                show: true
+              }
+            }
+                        };
+            
+                        var chartBar = new ApexCharts(document.querySelector("#"+String(id)+"VC"), optionsBar);
+                        chartBar.render();
+            
+                        document.getElementById(id+"ME").style.display="none";
+                        document.getElementById(id+"MP").style.display="block";
+          }
 
         }
     }
@@ -768,7 +777,7 @@ function addTable()
   dateFrom.className="input-sm form-control";
   dateFrom.name="start";
   dateFrom.type="text";
-  dateFrom.setAttribute("data-date-format","dd/mm/yyyy");
+  dateFrom.setAttribute("data-date-format","mm/dd/yyyy");
   dateFrom.onclick = function (){
     $('input[id=\"'+String(this.id)+'\"]').datepicker({
     format: 'dd/mm/yyyy',
@@ -787,7 +796,7 @@ function addTable()
   dateTo.className="input-sm form-control";
   dateTo.name="end";
   dateTo.type="text";
-  dateTo.setAttribute("data-date-format","dd/mm/yyyy");
+  dateTo.setAttribute("data-date-format","mm/dd/yyyy");
   dateTo.onclick = function (){
     $('input[id=\"'+String(this.id)+'\"]').datepicker({
     format: 'dd/mm/yyyy',
@@ -829,11 +838,11 @@ function addTable()
  
   
   //Candles chart canvas
-  var candleChart = document.createElement("canvas");
+  var candleChart = document.createElement("div");
   candleChart.id= "E"+String(c+1) + "CC";
   
   //volume chart canvas
-  var volumeChart = document.createElement("canvas");
+  var volumeChart = document.createElement("div");
   volumeChart.id="E"+ String(c+1)+ "VC";
 
   dateDiv.appendChild(dateFrom);
@@ -850,6 +859,7 @@ function addTable()
 
   main_preview_area.appendChild(candleChart);
   main_preview_area.appendChild(volumeChart);
+  main_preview_area.appendChild(btnEditar);
 
   newele.appendChild(main_edit_area);
   newele.appendChild(main_preview_area);

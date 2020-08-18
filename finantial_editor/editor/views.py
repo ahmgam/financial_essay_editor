@@ -3,6 +3,7 @@ from django.http import HttpResponse,JsonResponse
 import requests
 import logging
 from datetime import datetime 
+import json
 logger = logging.getLogger(__name__)
 # Create your views here.
 def index (request):
@@ -18,8 +19,8 @@ def preview_chart(request):
     logger.error("LOG : start date : "+start_date + " end date : "+ end_date + " ticker : "+ ticker)
     
     try:
-        s_date = datetime.strptime(start_date, '%d-%m-%Y')
-        e_date = datetime.strptime(end_date, '%d-%m-%Y')
+        s_date = datetime.strptime(start_date, '%m-%d-%Y')
+        e_date = datetime.strptime(end_date, '%m-%d-%Y')
         if e_date.date()<s_date.date():
             e_date,s_date=s_date,e_date
         start_date=s_date.strftime('%Y-%m-%d')
@@ -31,7 +32,7 @@ def preview_chart(request):
     return JsonResponse(getData(start_date,end_date,stock,ticker),safe=False)
     
 def getData(start_date,end_date,stock,ticker):
-    res={}
+    res=[]
     
     if ticker=="" and stock=="":
         res = {'error':'please enter ticker symbol'}
@@ -82,8 +83,9 @@ def processData (route):
             break
         offset = int(rawData['pagination']['offset']) + batchSize
 
-    totalData={'cData':candleData , 'vData':lineData}
-    logger.error(totalData)
+    totalData={'cData': candleData , 'vData':lineData}
+    totalData = json.dumps(totalData)
+
     return totalData
     
 
