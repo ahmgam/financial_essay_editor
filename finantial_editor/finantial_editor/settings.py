@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'editor.apps.EditorConfig',
+    'home.apps.HomeConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -76,15 +77,19 @@ WSGI_APPLICATION = 'finantial_editor.wsgi.application'
 
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    'articles':{
         'ENGINE': 'djongo',
-        'NAME': 'financialdb',
+        'NAME': 'finsdb',
         'USER':'gemy',
-        'HOST': 'mongodb+srv://gemy:w0neuHfUlZ8NCk9K@financialdb.4vupw.mongodb.net/financialdb?retryWrites=true&w=majority',
-        'PASSWORD': "w0neuHfUlZ8NCk9K",
+        'HOST': 'mongodb://gemy:123456789@finsdb-shard-00-00.4vupw.mongodb.net:27017,finsdb-shard-00-01.4vupw.mongodb.net:27017,finsdb-shard-00-02.4vupw.mongodb.net:27017/finsdb?ssl=true&replicaSet=atlas-2sgyqj-shard-0&authSource=admin&retryWrites=true&w=majority',
+        'PASSWORD': "123456789",
     }
 }
 
-
+DATABASE_ROUTERS = ['editor.routers.EditorRouter',]
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
