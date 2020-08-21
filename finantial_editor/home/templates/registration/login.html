@@ -1,0 +1,21 @@
+
+{% block content %}
+
+{% if form.errors %}
+  <p>Your username and password didn't match. Please try again.</p>
+{% endif %}
+
+{% if request.user.is_authenticated %}
+  <p>you are already logged in !</p>
+  {% else %}
+
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" class="btn btn-primary" value="Login" />
+    <input type="hidden" name="next" value="{{ next }}" />
+    </form>
+{% endif %}
+
+
+{% endblock %}

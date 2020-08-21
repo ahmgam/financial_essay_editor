@@ -4,6 +4,7 @@ import requests
 import logging
 from datetime import datetime 
 import json
+from django.contrib.auth.mixins import LoginRequiredMixin
 logger = logging.getLogger(__name__)
 # Create your views here.
 def index (request):
