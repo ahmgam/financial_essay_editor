@@ -1,0 +1,54 @@
+<html lang="en">
+
+<head>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.5/examples/blog/">
+    <link href="https://getbootstrap.com/docs/4.5/examples/blog/blog.css" rel="stylesheet">
+
+
+    <title>Blocky Blog</title>
+
+</head>
+<body>
+
+  <header class="blog-header py-3">
+    <div class="row flex-nowrap justify-content-between align-items-center">
+      <div class="col-4 text-center">
+        <a class="blog-header-logo text-dark" href="#">Blocky Blog</a>
+      </div>
+      <div class="col-4 d-flex justify-content-end align-items-center">
+        <a class="text-muted" href="#" aria-label="Search">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="mx-3" role="img" viewBox="0 0 24 24" focusable="false"><title>Search</title><circle cx="10.5" cy="10.5" r="7.5"/><path d="M21 21l-5.2-5.2"/></svg>
+        </a>
+       {% if user.is_authenticated %}
+        <a class="btn btn-sm btn-outline-secondary" >hi {{user.username}}</a>
+        <a class="btn btn-sm btn-outline-secondary" href={%url 'logout'%}>logout</a>
+
+        {% else %}
+        <a class="btn btn-sm btn-outline-secondary" href={%url 'login'%}>login</a>
+        <a class="btn btn-sm btn-outline-secondary" href={%url 'signup'%}>Signup</a>
+
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+{% if blogcontent%}
+{% for blogcontent in blogcontent_list%}
+<div class="blog-post">
+        <h2 class="blog-post-title">blog.title</h2>
+        <p class="blog-post-meta"> {{blogcontent.author}} </p>
+        <p class="blog-post-meta">Created : {{blogcontent.createdAt}} </p>
+        <p class="blog-post-meta">Last modified : {{blogcontent.modifiedAt}} </p>
+        {{blogcontent.content}}
+
+      </div>
+</div>
+{% endfor %}
+{% else%}
+<p> no availabe content rightnow </p>
+{%endif%}
+</body>
+</html>

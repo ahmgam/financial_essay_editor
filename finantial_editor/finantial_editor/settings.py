@@ -28,6 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -82,10 +83,13 @@ DATABASES = {
     },
     'articles':{
         'ENGINE': 'djongo',
-        'NAME': 'finsdb',
-        'USER':'gemy',
-        'HOST': 'mongodb://gemy:123456789@finsdb-shard-00-00.4vupw.mongodb.net:27017,finsdb-shard-00-01.4vupw.mongodb.net:27017,finsdb-shard-00-02.4vupw.mongodb.net:27017/finsdb?ssl=true&replicaSet=atlas-2sgyqj-shard-0&authSource=admin&retryWrites=true&w=majority',
-        'PASSWORD': "123456789",
+        'CLIENT':{
+            'host': 'mongodb+srv://gemy:AH4jKpUYCVjehI6P@finsdb.4vupw.mongodb.net/finsdb?retryWrites=true&w=majority',
+            'username':'gemy',
+            'password': "AH4jKpUYCVjehI6P",
+            'authMechanism': 'SCRAM-SHA-1'
+        }
+        
     }
 }
 

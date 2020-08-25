@@ -5,6 +5,7 @@ import logging
 from datetime import datetime 
 import json
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import BlogContent
 logger = logging.getLogger(__name__)
 # Create your views here.
 def index (request):
@@ -89,7 +90,10 @@ def processData (route):
 
     return totalData
     
-
+def addArticle (request):
+    data = request.data
+    m = BlogContent(content=data,autorId=request.user.id)
+    m.save()
 
 # needed data
 # mode = {eod , intraday}

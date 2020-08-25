@@ -4,7 +4,18 @@ from djongo import models
 
 
 class BlogContent(models.Model):
+    title=models.CharField(max_length=100,null=False)
     content = models.TextField()
+    author=models.CharField(max_length=100)
     authorId = models.CharField(max_length=100)    
+    published= models.BooleanField(default=False)
+    createdAt = models.DateTimeField(auto_now=True)
+    modifiedAt= models.DateTimeField(auto_now_add=True)
+    class Meta:        
+        app_label = 'article'
+
+class ChartData (models.Model):
+    data= models.JSONField()
+    article = models.ForeignKey(BlogContent,on_delete=models.CASCADE)
     class Meta:        
         app_label = 'article'

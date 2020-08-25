@@ -8,12 +8,11 @@
 {% if request.user.is_authenticated %}
   <p>you are already logged in !</p>
   {% else %}
-
   <form method="post" action="{% url 'login' %}">
     {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" class="btn btn-primary" value="Login" />
-    <input type="hidden" name="next" value="{{ next }}" />
+    <input type="hidden" name="next" value="{% url 'home'%}" />
     </form>
 {% endif %}
 
