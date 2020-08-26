@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'editor.apps.EditorConfig',
     'home.apps.HomeConfig',
     'django.contrib.admin',
@@ -112,6 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+ASGI_APPLICATION = "finantial_editor.routing.application"
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/

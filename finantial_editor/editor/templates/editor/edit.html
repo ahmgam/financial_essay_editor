@@ -13,10 +13,33 @@
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
   <script src="{% static 'editPageScript.js' %}"></script>
-
+<script>
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+function test(){window.alert(sessionStorage.length);}
+</script>
 </head>
 <body>
 <h1>Essay blocks</h1>
+<div id ='title_div' class='title'>
+<input type='text' id='title_input'>
+<h2 id = 'title' display='none'><h2>
+<button id ='title_done' onclick='titleDone()' > done </button>
+<button id ='title_edit' display='none' onclick='titleEdit()' > edit </button>
+<button onclick='test()'>test</button>
 <div id="blocks" class="container-fluid" style="margin: 10px;">
  
 

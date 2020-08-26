@@ -10,7 +10,7 @@ from django.contrib.auth.views import LogoutView,LoginView
 class ArticleView (ListView):
     model= BlogContent
     template_name="home/blogcontent_list.html"
-
+    
 class SignUp (CreateView):
     form_class = UserCreationForm
     template_name="registration/user_create.html"
@@ -21,6 +21,7 @@ class logoutView (LogoutView):
 
 class loginView(LoginView):
     success_url=reverse_lazy('home')
+    template_name= "registration/login.html"
     
     
 

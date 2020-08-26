@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import HttpResponse,JsonResponse
+from django.urls import reverse
 import requests
 import logging
 from datetime import datetime 
@@ -8,8 +9,25 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import BlogContent
 logger = logging.getLogger(__name__)
 # Create your views here.
-def index (request):
-    return render(request, 'editor/edit.html')
+def createBlog (request):
+    blog = BlogContent()
+    blog.title="draft title"
+    blog.content=""
+    blog.author=request.user.username
+    blog.authorId=request.user.id
+    blog.published=False
+    blog.save()
+
+    return redirect(str(blog.pk)+'/')
+
+def index(request,pk):
+    blog= BlogContent(pk=pk)
+    data = {
+       'id':str(blog.pk),
+       'title':str(blog.title) 
+
+    }
+    return render(request,'editor/edit.html',data)
 
 def preview_chart(request):
     

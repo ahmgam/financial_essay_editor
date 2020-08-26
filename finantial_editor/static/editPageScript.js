@@ -51,6 +51,24 @@ document.addEventListener('input', function (event) {
 
 }, false);
 
+function titleEdit()
+{
+  document.getElementById("title_input").style.display="block";
+  document.getElementById("title").style.display="none";
+  document.getElementById("title_done").style.display="block";
+  document.getElementById("title_edit").style.display="none";
+}
+function titleDone()
+{
+  
+  d=document.getElementById("title_input");
+  d.style.display="none";
+  c=document.getElementById("title");
+  c.style.display="block";
+  c.value=d.value;
+  document.getElementById("title_done").style.display="none";
+  document.getElementById("title_edit").style.display="block";
+}
 function autoheight(x) {
     x.style.height = "5px";
     x.style.height = (15+x.scrollHeight)+"px";
@@ -888,3 +906,20 @@ function addTable()
  }
 // Listen for changes to inputs and textareas
 
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+function test(){window.alert(getCookie("sessionid"));
+return ""}

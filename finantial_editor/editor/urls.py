@@ -3,7 +3,8 @@ from django.urls import path, re_path
 from . import views
 #APP_NAME="editor"
 urlpatterns = [
-re_path('chart_preview/', views.preview_chart),
-re_path('edit/<int:pk>', views.index),
+path('chart_preview/', views.preview_chart),
+path('edit/<path:pk>', views.index),
+path('edit/',views.createBlog,name='createBlog')
 
 ]
