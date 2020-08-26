@@ -22,12 +22,22 @@ def createBlog (request):
 
 def index(request,pk):
     blog= BlogContent(pk=pk)
-    data = {
-       'id':str(blog.pk),
-       'title':str(blog.title) 
+    if request.user.id==blog.authorId:
+        data = {'header':
+          {
+              'id': blog.pk,
+              'session': request.session.id
+          },
+          'title':blog.title,
+          'blocks':{}
+       
+         }
+        return render(request,'editor/edit.html',data)
+    else : 
+        render(request,"home/home.html")
 
-    }
-    return render(request,'editor/edit.html',data)
+  
+    
 
 def preview_chart(request):
     
