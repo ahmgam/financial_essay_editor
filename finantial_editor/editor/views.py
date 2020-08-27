@@ -10,10 +10,6 @@ from bson.objectid import ObjectId
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import BlogContent
 from django.contrib.auth.models import User
-from django.utils.crypto import get_random_string
-from django.contrib.sessions.backends.db import SessionStore
-from django.conf import settings
-from django.contrib.sessions.middleware import SessionMiddleware
 
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -26,29 +22,15 @@ def createBlog (request):
 
 def index(request,pk):
     pk=pk.replace('/','')
-    blog= BlogContent.objects.get(pk=ObjectId(pk) )
-    user = User.objects.get(username=request.user.username,email=request.user.email)
-    #logging.error("user : "+ user.pk + ", authorId : " + blog.authorId)
-    if user.pk==blog.authorId:  
-        session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
-        request.session = SessionStore(session_key)
-        if not request.session.exists(request.session.session_key):
-            request.session.create() 
-        
-        if request.session.__contains__('active_article'):
-            secret=request.session['active_article']
-            
-        else :
-            secret= get_random_string(length=10)
-            request.session.__setitem__('active_article', pk)
-         
-        response = render(request,'editor/edit.html')  # django.http.HttpResponse
-        response.set_cookie(key='WSsession', value=pk+"/"+session_key)
-        return response
-    return render(request,"home/blogcontent_list.html")
-        
-
-  
+    try:
+        blog= BlogContent.objects.get(pk=ObjectId(pk) )
+        user = User.objects.get(pk=request.user.id)
+        if user.pk==blog.authorId:  
+            return render(request,'editor/edit.html') 
+        return render(request,"home/blogcontent_list.html")
+    except:
+        return render(request,"home/blogcontent_list.html")
+    
     
 
 def preview_chart(request):

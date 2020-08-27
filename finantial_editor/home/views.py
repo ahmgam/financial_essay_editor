@@ -10,6 +10,8 @@ from django.contrib.auth.views import LogoutView,LoginView
 class ArticleView (ListView):
     model= BlogContent
     template_name="home/blogcontent_list.html"
+    def get_queryset(self):
+        return BlogContent.objects.filter(published=True)
     
 class SignUp (CreateView):
     form_class = UserCreationForm

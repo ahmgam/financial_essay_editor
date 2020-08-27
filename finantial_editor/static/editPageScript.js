@@ -28,6 +28,34 @@ every Id consist of :
 - "CC" : candles chart
 - "VC" : volume chart
 
+Stored data shape :
+- for text blocks :
+{'id' : number,
+  'type':'text',
+  'content': HTML_Content}
+
+- for image block :
+{'id': number,
+'type': 'image',
+'content':URL}
+
+- for table blocks : 
+{'id': number,
+'type':'table',
+'content':{
+  'rows':number,
+  'cols':number,
+  'table':[n, n ,...]}
+
+- for chart :
+  {'id': number,
+'type': 'chart',
+'content':{
+  'datefrom': Date,
+  'dateto': Date,
+  'ticker': ticker,
+  'chartid': ChartData.id (null for draft)
+}}
 */
 var tickers = [['Microsoft Corp',  'MSFT'],
 [ 'Apple Inc',  'AAPL'],
@@ -907,22 +935,6 @@ function addTable()
 // Listen for changes to inputs and textareas
 
 
-function getCookie(cname) {
-  var name = cname + "=";
-  var decodedCookie = decodeURIComponent(document.cookie);
-  var ca = decodedCookie.split(';');
-  for(var i = 0; i <ca.length; i++) {
-    var c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length).replace("\"","").replace("\"","");
-    }
-  }
-  return "";
-}
-
 function socket_connection()
 {
 
@@ -930,14 +942,71 @@ function socket_connection()
     'ws://'
     + window.location.host
     + '/ws/'
-    + getCookie('WSsession')
-    + '/'
+    + String(window.location.pathname).substring(11) 
 );
 chatSocket.onopen= function(e){
-  window.alert("connection succeeded")
+  chatSocket.send({'message':'get draft'})
 }
 chatSocket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
+    const data = JSON.parse(e);
+    var turndownService = new TurndownService();
+    data=data.sort(function(a, b)
+ {
+  var x = a['id']; var y = b['id'];
+  return ((x < y) ? -1 : ((x > y) ? 1 : 0));});
+    var count = Object.keys(data).length;
+    for (var i = 0;i<count;i++)
+    {
+      
+      if (data[i].type=='text')
+      {
+        addBlock();
+        blockid='E'+ document.querySelector('#blocks').lastElementChild.id;
+        document.getElementById(blockid+'TX').value=turndownService.turndown(data[i].content);
+      }
+      if (data[i].type=='image')
+      {
+        addImage();
+        blockid='E'+ document.querySelector('#blocks').lastElementChild.id;
+        document.getElementById(blockid+'MP').href=data[i].content;
+        document.getElementById(blockid+'MP').style.display='block';
+        document.getElementById(blockid+'ME').style.display='none';
+
+      }
+      if (data[i].type=='table')
+      {
+        addTable();
+        blockid='E'+ document.querySelector('#blocks').lastElementChild.id;
+        document.getElementById(blockid+'RT').value=data[i].content.rows;
+        document.getElementById(blockid+'CT').value=data[i].content.cols;
+        createTable(document.getElementById(blockid+'CB'))
+        r= parseInt(data[i].content.rows);
+        c=parseInt(data[i].content.cols);
+        for (var i =1;i<r+1;i++)
+        {
+          for (var j =1;j<c+1;j++)
+          {
+            document.getElementById(blockid+'T'+String(i)+':'+String(j)).value=data[i].content.table[(i-1)*c + j-1];
+          }
+        }
+
+
+      }
+      if (data[i].type=='chart')
+      {
+        addChart();
+        blockid='E'+ document.querySelector('#blocks').lastElementChild.id;
+        document.getElementById(blockid+'TS').options.selection=data[i].content.ticker;
+        document.getElementById(blockid+'DF').value=data[i].content.datefrom;
+        document.getElementById(blockid+'DT').value=data[i].content.dateto;
+      }
+      
+    
+      value=e[i].content;
+      document.getElementById('E'+String(key))
+
+    }
+    
     document.querySelector('#chat-log').value += (data.message + '\n');
 };
 

@@ -5,8 +5,9 @@ from djongo import models
 
 class BlogContent(models.Model):
     _id = models.ObjectIdField()
-    title=models.CharField(max_length=100,null=False)
-    content = models.TextField()
+    title=models.CharField(max_length=100,null=False,default="blank title")
+    content = models.JSONField()
+    draft=models.JSONField()
     author=models.CharField(max_length=100)
     authorId = models.IntegerField(max_length=6)    
     published= models.BooleanField(default=False)
