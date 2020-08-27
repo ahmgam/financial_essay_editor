@@ -906,6 +906,7 @@ function addTable()
  }
 // Listen for changes to inputs and textareas
 
+
 function getCookie(cname) {
   var name = cname + "=";
   var decodedCookie = decodeURIComponent(document.cookie);
@@ -916,10 +917,33 @@ function getCookie(cname) {
       c = c.substring(1);
     }
     if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
+      return c.substring(name.length, c.length).replace("\"","").replace("\"","");
     }
   }
   return "";
 }
-function test(){window.alert(getCookie("sessionid"));
-return ""}
+
+function socket_connection()
+{
+
+  const chatSocket = new WebSocket(
+    'ws://'
+    + window.location.host
+    + '/ws/'
+    + getCookie('WSsession')
+    + '/'
+);
+chatSocket.onopen= function(e){
+  window.alert("connection succeeded")
+}
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    document.querySelector('#chat-log').value += (data.message + '\n');
+};
+
+chatSocket.onclose = function(e) {
+    console.error('Chat socket closed unexpectedly');
+};
+}
+
+document.addEventListener('load', socket_connection(), false);

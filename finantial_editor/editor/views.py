@@ -3,38 +3,50 @@ from django.http import HttpResponse,JsonResponse
 from django.urls import reverse
 import requests
 import logging
+from djongo.models.fields import ObjectId
 from datetime import datetime 
 import json
+from bson.objectid import ObjectId
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import BlogContent
+from django.contrib.auth.models import User
+from django.utils.crypto import get_random_string
+from django.contrib.sessions.backends.db import SessionStore
+from django.conf import settings
+from django.contrib.sessions.middleware import SessionMiddleware
+
 logger = logging.getLogger(__name__)
 # Create your views here.
 def createBlog (request):
-    blog = BlogContent()
-    blog.title="draft title"
-    blog.content=""
-    blog.author=request.user.username
-    blog.authorId=request.user.id
-    blog.published=False
-    blog.save()
+    user = User.objects.get(username=request.user.username, email=request.user.email)
+    blog = BlogContent.objects.create(title="draft title",content=" ",author=str(user.username),authorId=user.pk,published=False)
+    authid=str(blog.pk)
 
-    return redirect(str(blog.pk)+'/')
+    return redirect(authid+'/')
 
 def index(request,pk):
-    blog= BlogContent(pk=pk)
-    if request.user.id==blog.authorId:
-        data = {'header':
-          {
-              'id': blog.pk,
-              'session': request.session.id
-          },
-          'title':blog.title,
-          'blocks':{}
-       
-         }
-        return render(request,'editor/edit.html',data)
-    else : 
-        render(request,"home/home.html")
+    pk=pk.replace('/','')
+    blog= BlogContent.objects.get(pk=ObjectId(pk) )
+    user = User.objects.get(username=request.user.username,email=request.user.email)
+    #logging.error("user : "+ user.pk + ", authorId : " + blog.authorId)
+    if user.pk==blog.authorId:  
+        session_key = request.COOKIES.get(settings.SESSION_COOKIE_NAME, None)
+        request.session = SessionStore(session_key)
+        if not request.session.exists(request.session.session_key):
+            request.session.create() 
+        
+        if request.session.__contains__('active_article'):
+            secret=request.session['active_article']
+            
+        else :
+            secret= get_random_string(length=10)
+            request.session.__setitem__('active_article', pk)
+         
+        response = render(request,'editor/edit.html')  # django.http.HttpResponse
+        response.set_cookie(key='WSsession', value=pk+"/"+session_key)
+        return response
+    return render(request,"home/blogcontent_list.html")
+        
 
   
     

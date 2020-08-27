@@ -4,10 +4,11 @@ from djongo import models
 
 
 class BlogContent(models.Model):
+    _id = models.ObjectIdField()
     title=models.CharField(max_length=100,null=False)
     content = models.TextField()
     author=models.CharField(max_length=100)
-    authorId = models.CharField(max_length=100)    
+    authorId = models.IntegerField(max_length=6)    
     published= models.BooleanField(default=False)
     createdAt = models.DateTimeField(auto_now=True)
     modifiedAt= models.DateTimeField(auto_now_add=True)

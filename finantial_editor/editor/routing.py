@@ -5,5 +5,5 @@ from .consumers import  DraftConsumer
 
 
 websocket_urlpatterns = [
-    path('ws/<int:pk>/<str:tocken>/', DraftConsumer),
+    path('ws/<str:pk>/<str:tocken>/', DraftConsumer),
 ]
