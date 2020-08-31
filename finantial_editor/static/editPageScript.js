@@ -214,6 +214,8 @@ function doneBlock(m)
         prev.innerHTML= content.innerHTML;
         var d = document.querySelector("#"+id+"ME");
         d.style.display="none";
+        var resp = {"message":"save draft","data":{"id": id.substring(1),"type":"text","content":String(document.getElementById(id+"PA").innerHTML).replace(/"/g, "'")}};
+        chatSocket.send(JSON.stringify(resp));
         }
         if (mode=="image")
         {
@@ -935,8 +937,6 @@ function addTable()
 // Listen for changes to inputs and textareas
 
 
-function socket_connection()
-{
 
   const chatSocket = new WebSocket(
     'ws://'
@@ -945,7 +945,7 @@ function socket_connection()
     + String(window.location.pathname).substring(11) 
 );
 chatSocket.onopen= function(e){
-  chatSocket.send({'message':'get draft'})
+  chatSocket.send(JSON.stringify({"message":"get draft"}));
 }
 chatSocket.onmessage = function(e) {
     const data = JSON.parse(e);
@@ -1013,6 +1013,5 @@ chatSocket.onmessage = function(e) {
 chatSocket.onclose = function(e) {
     console.error('Chat socket closed unexpectedly');
 };
-}
 
-document.addEventListener('load', socket_connection(), false);
+

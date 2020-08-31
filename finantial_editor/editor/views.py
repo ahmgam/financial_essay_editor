@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect
-from django.http import HttpResponse,JsonResponse
+from django.http import HttpResponse,JsonResponse,HttpResponseRedirect
 from django.urls import reverse
 import requests
 import logging
@@ -14,8 +14,8 @@ from django.contrib.auth.models import User
 logger = logging.getLogger(__name__)
 # Create your views here.
 def createBlog (request):
-    user = User.objects.get(username=request.user.username, email=request.user.email)
-    blog = BlogContent.objects.create(title="draft title",content=" ",author=str(user.username),authorId=user.pk,published=False)
+    user = User.objects.get(pk=request.user.id)
+    blog = BlogContent.objects.create(title="draft title",content=[],draft=[],author=str(user.username),authorId=user.pk,published=False)
     authid=str(blog.pk)
 
     return redirect(authid+'/')
@@ -27,9 +27,9 @@ def index(request,pk):
         user = User.objects.get(pk=request.user.id)
         if user.pk==blog.authorId:  
             return render(request,'editor/edit.html') 
-        return render(request,"home/blogcontent_list.html")
+        return HttpResponseRedirect('home/blogcontent_list.html')
     except:
-        return render(request,"home/blogcontent_list.html")
+        return HttpResponseRedirect('home/blogcontent_list.html')
     
     
 
