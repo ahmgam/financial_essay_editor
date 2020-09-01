@@ -1,7 +1,7 @@
 
 import json
 from channels.generic.websocket import WebsocketConsumer
-from editor.models import BlogContent,ChartData
+from editor.models import BlogContent,ChartData,DraftContent
 import logging
 from djongo.models.fields import ObjectId
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ class DraftConsumer(WebsocketConsumer):
         try:
             pk = self.scope['url_route']['kwargs']['pk']
             userid = self.scope['user'].id
-            blog = BlogContent.objects.get(pk=ObjectId(pk))
+            blog = DraftContent.objects.get(pk=ObjectId(pk))
             #logger.error("username : "+str(self.scope['user'].username)+", user id : "+str(userid)+ ", authed : "+str(self.scope['user'].is_authenticated))
             authorid = blog.authorId
             if (userid==authorid):
@@ -43,22 +43,30 @@ class DraftConsumer(WebsocketConsumer):
         message =json_data['message']
         logger.error(message)
 
-        blog=BlogContent.objects.get(pk=ObjectId(self.scope['url_route']['kwargs']['pk']))
+        blog=DraftContent.objects.get(pk=ObjectId(self.scope['url_route']['kwargs']['pk']))
 
         if message=="get draft":
-            self.send(blog.draft)
-        if message=='get content':
             self.send(blog.content)
+
         if message=='save draft':
             #blog.draft[text_data_json['data']['id']]=text_data_json['data']['content']
             logger.error("saving draft ")
             x =list(blog.draft)
-            x.append(json_data['data'])
+            exist = False
+            for block in x:
+                if block['id'] == json_data['data']['id']:
+                    block = json_data['data']
+                    exist=True
+            if exist==False:
+                x.append(json_data['data'])
             blog.draft =  x
-
-        if message=='save content':
-            #blog.content[text_data_json['data']['id']]=text_data_json['data']['content']
-            blog.content[text_data['data']['id']]=text_data['data']['content']
+        
+        if message=='delete block':
+            x =list(blog.draft)
+            for block in x:
+                if block['id'] == json_data['data']['id']:
+                    x.remove(block)
+            blog.draft =  x 
         logger.error("not all of above")
         blog.save()
 

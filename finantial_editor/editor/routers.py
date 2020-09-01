@@ -19,7 +19,8 @@ class EditorRouter(object):
 
     def allow_relation(self, obj1, obj2, **hints):
         """Determine if relationship is allowed between two objects."""
-
+        if obj1._meta.app_label== obj2._meta.app_label:
+            return True
         # Block relationship if one object is in the Example app and the other isn't.
         return False
 

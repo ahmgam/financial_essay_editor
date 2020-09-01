@@ -8,28 +8,38 @@ from datetime import datetime
 import json
 from bson.objectid import ObjectId
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import BlogContent
+from .models import BlogContent,DraftContent
 from django.contrib.auth.models import User
 
 logger = logging.getLogger(__name__)
 # Create your views here.
 def createBlog (request):
     user = User.objects.get(pk=request.user.id)
-    blog = BlogContent.objects.create(title="draft title",content=[],draft=[],author=str(user.username),authorId=user.pk,published=False)
-    authid=str(blog.pk)
+    blog = BlogContent.objects.create(author=str(user.username),authorId=user.pk,published=False)
+    draft = DraftContent.objects.create(author=str(user.username),authorId=user.pk,ref=blog )
 
-    return redirect(authid+'/')
+    return redirect(str(draft.pk)+'/')
 
 def index(request,pk):
     pk=pk.replace('/','')
+    b_type = ''
     try:
-        blog= BlogContent.objects.get(pk=ObjectId(pk) )
-        user = User.objects.get(pk=request.user.id)
-        if user.pk==blog.authorId:  
-            return render(request,'editor/edit.html') 
-        return HttpResponseRedirect('home/blogcontent_list.html')
+        blog= BlogContent.objects.get(pk=ObjectId(pk))
+        b_type='blog'
     except:
-        return HttpResponseRedirect('home/blogcontent_list.html')
+        try:
+            blog= DraftContent.objects.get(pk=ObjectId(pk))
+            b_type='draft'
+        except:
+            return HttpResponseRedirect('home/blogcontent_list.html')
+    user = User.objects.get(pk=request.user.id)
+    if user.pk==blog.authorId:  
+        if b_type=='blog' :
+            draft = DraftContent.objects.create(author=str(user.username),authorId=user.pk,ref=blog)
+            draft.content=blog.content
+            return redirect(reverse('createBlog')+ str(draft.pk)+'/')
+        return render(request,'editor/edit.html') 
+    return HttpResponseRedirect('home/blogcontent_list.html')
     
     
 
