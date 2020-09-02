@@ -1,7 +1,7 @@
 {% load static %}
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
+  <title>Edit blog</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -21,8 +21,8 @@
 <div id ='title_div' class='title'>
 <input type='text' id='title_input'>
 <h2 id = 'title' display='none'><h2>
-<button id ='title_done' onclick='titleDone()' > done </button>
-<button id ='title_edit' display='none' onclick='titleEdit()' > edit </button>
+<button id ='title_done' onclick='titleDone()' class='btn btn-success'> done </button>
+<button id ='title_edit' display='none' onclick='titleEdit()' class='btn btn-info'> edit </button>
 <div id="blocks" class="container-fluid" style="margin: 10px;">
  
 
@@ -31,6 +31,7 @@
 
 
 </div>
+<button onclick="publishBlog()" class="btn btn-primary">Publish blog</button>
 <button onclick="addBlock()" class="btn btn-primary" style="position: fixed;bottom: 10%;right: 100px;border-radius: 50%; ">+</button> 
 <button onclick="addImage()" class="btn btn-primary" style="position: fixed;bottom: 15%;right: 100px;border-radius: 50%; ">[ ]</button> 
 <button onclick="addTable()" class="btn btn-primary" style="position: fixed;bottom: 20%;right: 100px;border-radius: 50%; ">T</button> 

@@ -44,10 +44,12 @@ class DraftConsumer(WebsocketConsumer):
         logger.error(message)
 
         blog=DraftContent.objects.get(pk=ObjectId(self.scope['url_route']['kwargs']['pk']))
-
+        if message=="get title":
+            self.send(str({"id":"0","type":"title","content":blog.title}))
         if message=="get draft":
             self.send(blog.content)
-
+        if message=="save title":
+            blog.title = json_data['data']
         if message=='save draft':
             #blog.draft[text_data_json['data']['id']]=text_data_json['data']['content']
             logger.error("saving draft ")
@@ -67,6 +69,12 @@ class DraftConsumer(WebsocketConsumer):
                 if block['id'] == json_data['data']['id']:
                     x.remove(block)
             blog.draft =  x 
+        if message=="save blog":
+           myblog = BlogContent(blog.ref) 
+           myblog.title= json_data['data'][0]['content']
+           myblog.content=json_data['data'][1:]
+           myblog.published=True
+           myblog.save()
         logger.error("not all of above")
         blog.save()
 

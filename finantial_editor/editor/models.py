@@ -29,6 +29,5 @@ class DraftContent(models.Model):
 
 class ChartData (models.Model):
     data= models.JSONField()
-    article = models.ForeignKey(BlogContent,on_delete=models.CASCADE)
     class Meta:        
         app_label = 'article'

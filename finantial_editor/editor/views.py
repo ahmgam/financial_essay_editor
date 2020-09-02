@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect
 from django.http import HttpResponse,JsonResponse,HttpResponseRedirect
-from django.urls import reverse
+from django.urls import reverse,reverse_lazy
 import requests
 import logging
 from djongo.models.fields import ObjectId
@@ -8,8 +8,14 @@ from datetime import datetime
 import json
 from bson.objectid import ObjectId
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import BlogContent,DraftContent
+from .models import BlogContent,DraftContent,ChartData
 from django.contrib.auth.models import User
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+import random
+import string
+import base64
+from django.views.generic.edit import DeleteView
 
 logger = logging.getLogger(__name__)
 # Create your views here.
@@ -65,6 +71,31 @@ def preview_chart(request):
     
     return JsonResponse(getData(start_date,end_date,stock,ticker),safe=False)
     
+
+def create_chart(request):
+    
+    start_date,end_date,ticker,stock="","","",""
+    if request.GET.__contains__('start_date') : start_date=request.GET.get('start_date')
+    if request.GET.__contains__('end_date') : end_date=request.GET.get('end_date')
+    if request.GET.__contains__('ticker') : ticker=request.GET.get('ticker')
+    if request.GET.__contains__('stock') : stock=request.GET.get('stock')
+    logger.error("LOG : start date : "+start_date + " end date : "+ end_date + " ticker : "+ ticker)
+    
+    try:
+        s_date = datetime.strptime(start_date, '%m-%d-%Y')
+        e_date = datetime.strptime(end_date, '%m-%d-%Y')
+        if e_date.date()<s_date.date():
+            e_date,s_date=s_date,e_date
+        start_date=s_date.strftime('%Y-%m-%d')
+        end_date=e_date.strftime('%Y-%m-%d')
+    except ValueError:
+        logger.error("Dates mismatch : start date : "+start_date + " end date : "+ end_date + " ticker : "+ ticker)
+        return {"error":"unvalid date"}
+    data = getData(start_date,end_date,stock,ticker)
+    chart = ChartData.objects.create(data=data)
+        
+    return JsonResponse(json.dump({"id":str(chart.pk)}),safe=False)
+
 def getData(start_date,end_date,stock,ticker):
     res=[]
     
@@ -121,12 +152,61 @@ def processData (route):
     totalData = json.dumps(totalData)
 
     return totalData
-    
-def addArticle (request):
-    data = request.data
-    m = BlogContent(content=data,autorId=request.user.id)
-    m.save()
 
+
+def image_upload(request):
+    if request.method == 'POST' :
+        
+        myfile = json.dumps(request.POST)['imgdata']
+        myfile=base64.decodebytes(myfile)
+        name = lambda : ''.join(random.choice(string.ascii_lowercase) for i in range(15))
+        fs = FileSystemStorage()
+        filename = fs.save(name+'.jpg', myfile)
+        uploaded_file_url = fs.url(filename)
+        return JsonResponse(json.dumps({"message":"success","url":uploaded_file_url}))
+    return JsonResponse(json.dumps({"message":"error"}))
+
+def viewBlog(request,pk):
+    pk=pk.replace('/','')
+    b_type = ''
+    try:
+        blog =BlogContent.objects.get(pk=ObjectId(pk))
+    except:
+        try:
+            blog= BlogContent(DraftContent.objects.get(pk=ObjectId(pk)).ref)
+        except:
+            return HttpResponseRedirect('home/blogcontent_list.html')
+    if blog.published==False:
+        return HttpResponseRedirect('home/blogcontent_list.html')
+    mydata = list(blog.content)
+    for block in mydata:
+        if block['type']=='chart':
+            chartdata = ChartData.objects.get(pk=ObjectId(block['content']['chartid']))
+            block['content']['data']=chartdata.data
+    payload = {"title":blog.title,"content":mydata}
+    
+    return render(request,"home/view.html",payload)
+
+def deleteBlog(request,pk):
+    pk = str(pk).replace("/","")
+    try:
+        blog=BlogContent.objects.get(pk=ObjectId(pk))
+        if blog.authorId==request.user.id:
+            blog.delete()
+        else :
+            return HttpResponseRedirect("home/dashboard.html")
+    except:
+        return HttpResponseRedirect("home/dashboard.html")
+def deleteDraft(request,pk):
+    pk = str(pk).replace("/","")
+    try:
+        blog=DraftContent.objects.get(pk=ObjectId(pk))
+        if blog.authorId==request.user.id:
+            blog.delete()
+        else :
+            return HttpResponseRedirect("home/dashboard.html")
+    except:
+        return HttpResponseRedirect("home/dashboard.html")
 # needed data
 # mode = {eod , intraday}
 # start_date

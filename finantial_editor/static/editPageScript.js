@@ -45,7 +45,7 @@ Stored data shape :
 'content':{
   'rows':number,
   'cols':number,
-  'table':[n, n ,...]}
+  'values':[n, n ,...]}
 
 - for chart :
   {'id': number,
@@ -90,12 +90,20 @@ function titleDone()
 {
   
   d=document.getElementById("title_input");
-  d.style.display="none";
   c=document.getElementById("title");
+  if (d.value=="")
+  {
+    window.alert("title cannot be empty");
+    return;
+  }
+
+  d.style.display="none";
   c.style.display="block";
   c.value=d.value;
   document.getElementById("title_done").style.display="none";
   document.getElementById("title_edit").style.display="block";
+  var resp = {"message":"save title","data":String(d.value)};
+  chatSocket.send(JSON.stringify(resp));
 }
 function autoheight(x) {
     x.style.height = "5px";
@@ -126,8 +134,15 @@ function createTable(m)
 {
   var myid=String (m.getAttribute("id"));
   var id=myid.substring(0,myid.length-2);
-  var tableRows =parseInt(document.getElementById(id+"RT").value);
-  var tableCols =parseInt(document.getElementById(id+"CT").value);
+  var tableRows =document.getElementById(id+"RT").value;
+  var tableCols =document.getElementById(id+"CT").value;
+  if (tableRows=="" || tableCols=="")
+  {
+    window.alert("please enter number of rows and columns correctly");
+    return;
+  }
+  tableCols=parseInt(tableCols);
+  tableRows=parseInt(tableRows);
   var myTable = document.createElement("TABLE");
   var myTableHeader = document.createElement("thead");
   var myTableBody = document.createElement("tbody");
@@ -194,6 +209,8 @@ function deleteBlock(m)
         var myid=String (m.getAttribute("id"));
         var id=myid.substring(0,myid.length-2);
         var x = document.querySelector("#"+id);
+        var resp = {"message":"delete block","data":{"id":id.substring(1)}};
+        chatSocket.send(JSON.stringify(resp));
         x.remove();
     }
 
@@ -205,11 +222,13 @@ function doneBlock(m)
         if (mode=="text")
         {
         var id=myid.substring(0,myid.length-2);
+        var content = document.getElementById(id+"IP");
+        if (content.innerHTML==""){window.alert("you shold write something before saving it"); return;}
         var x = document.getElementById(id+"ME");
         x.style.display = "none";
         var y = document.getElementById(id+"MP");
         y.style.display = "block";
-        var content = document.getElementById(id+"IP");
+        
         var prev = document.getElementById(id+"PA");
         prev.innerHTML= content.innerHTML;
         var d = document.querySelector("#"+id+"ME");
@@ -220,10 +239,7 @@ function doneBlock(m)
         if (mode=="image")
         {
           var id=myid.substring(0,myid.length-2);
-          var x = document.getElementById(id+"ME");
-          x.style.display = "none";
-          var y = document.getElementById(id+"MP");
-          y.style.display = "block";
+
           var content = document.getElementById(id+"BI");
           var prev = document.getElementById(id+"PA");
           var img = document.createElement("img");
@@ -233,9 +249,20 @@ function doneBlock(m)
           //img.setAttribute("src",content.value);
           if (prev.childElementCount==1){prev.firstChild.remove();}
           fReader.onloadend = function(event){img.src = event.target.result;}
+          if (typeof img.naturalWidth != "undefined" && img.naturalWidth == 0) 
+            {
+              window.alert("image is not loaded properly, check the selected file");
+              return;
+            }
           prev.appendChild(img);
+          var resp = {"message":"save draft","data":{"id": id.substring(1),"type":"image","content":String(img.src)}};
+          chatSocket.send(JSON.stringify(resp));
           var d = document.querySelector("#"+id+"ME");
           d.style.display="none";
+          var x = document.getElementById(id+"ME");
+          x.style.display = "none";
+          var y = document.getElementById(id+"MP");
+          y.style.display = "block";
         }
         if (mode=="table")
         {
@@ -246,6 +273,7 @@ function doneBlock(m)
           var tableRows =parseInt(document.getElementById(id+"RT").value);
           var tableCols =parseInt(document.getElementById(id+"CT").value);
           myTable.className="table";
+          var arr = []
           for (var i = 1 ; i< tableRows+1;i++)
           {
             var myRow = document.createElement("TR");
@@ -259,8 +287,14 @@ function doneBlock(m)
               }
               else {myCol= document.createElement("TD");}
               var tableInput = document.getElementById(id+ "T"+ String(i) + ":" + String(j));
+              if (tableInput.value=="")
+              {
+                window.alert("please fill in all table");
+                return;
+              }
               myCol.appendChild(document.createTextNode(tableInput.value));
               myRow.appendChild(myCol);
+              arr.append(String(tableInput.value));
             }
             if (i==1)
             {
@@ -269,12 +303,15 @@ function doneBlock(m)
             }
             else {myTableBody.appendChild(myRow);}
           }
+
           myTable.appendChild(myTableHeader);
           myTable.appendChild(myTableBody);
           var tableEditArea = document.getElementById(id+"TP");
           tableEditArea.appendChild(myTable);
           document.getElementById(id+"ME").style.display="none";
           document.getElementById(id+"MP").style.display="block";
+          var resp = {"message":"save table","data":{"id": id.substring(1),"type":"table","content":{"rows":String(tableRows),"cols":String(tableCols),"values":arr}}};
+          chatSocket.send(JSON.stringify(resp));
         }
         if (mode=="chart")
         {
@@ -288,6 +325,11 @@ function doneBlock(m)
           var selectedTicker = document.getElementById(id+"TS");
           selectedTicker=selectedTicker.options[selectedTicker.selectedIndex].value;
           var selectedStartDate= document.getElementById(id+"DF").value;
+          if (selectedStartDate=="" || selectedEndDate=="")
+          {
+            window.alert("you shold select start and end date correctly");
+            return;
+          }
           selectedStartDate=String(selectedStartDate).replace("/","-").replace("/","-");
           var selectedEndDate= document.getElementById(id+"DT").value;
           selectedEndDate=String(selectedEndDate).replace("/","-").replace("/","-");
@@ -305,6 +347,8 @@ function doneBlock(m)
           }
           else 
           {
+            var resp = {"message":"save draft","data":{"id": id.substring(1),"type":"chart","content":{"datefrom":String(selectedStartDate),"dateto":String(selectedEndDate),"ticker":String(selectedTicker),"chartid":""}}};
+            chatSocket.send(JSON.stringify(resp));
             var options = {
               series: [ {
               name: 'candle',
@@ -625,7 +669,7 @@ function addImage()
         var browseInput = document.createElement("input");
         browseInput.id="E"+String(c+1)+"BI";
         browseInput.setAttribute("type","file")
-        browseInput.setAttribute("accept","image/x-png,image/gif,image/jpeg")
+        browseInput.setAttribute("accept","image/jpeg")
 
    
 
@@ -936,15 +980,114 @@ function addTable()
  }
 // Listen for changes to inputs and textareas
 
+function publishBlog()
+{
+  var content = [];
+  var blocks = document.getElementById("blocks");
+  if (blocks.childElementCount==0){window.alert("there is no blocks in blog, write something to save");}
+  else {
+    var tit = {"id":"0","type":"title","content": document.getElementById("title").innerText};
+    content.append(tit);
+    for (var i =0;i<blocks.childElementCount;i++)
+    {
+      var child = blocks.children[i];
+      var id =child.id;
+      if (document.getElementById(id+"ME").style.display=="block")
+      {
+        window.alert("you shold finish editing all blocks first");
+        break;
+      }
+      var blockType = child.getAttribute("data");
+      if (blockType=="text")
+      {
+        var resp = {"id": id.substring(1),"type":"text","content":String(document.getElementById(id+"PA").innerHTML).replace(/"/g, "'")};
+        content.append(resp);
+      }
+      if (blockType=="image")
+      {
+        var imgElem = document.getElementById(id+"PA").firstChild
+        var canvas = document.createElement("canvas");
+        canvas.width = imgElem.clientWidth;
+        canvas.height = imgElem.clientHeight;
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(imgElem, 0, 0);
+        var dataURL = canvas.toDataURL("image/png");
+        var payload = {"imgdata":dataURL.replace(/^data:image\/(png|jpg);base64,/, "")};
+        var xmlhttp = new XMLHttpRequest();
+        var url = String(window.location.host)+"blog/uploadimg/";
+        var data={};
+        xmlhttp.onreadystatechange = function() {if (this.readyState == 4 && this.status == 200) {data = JSON.parse(this.responseText);}};
+        xmlhttp.open("POST", url, false);
+        xmlhttp.send(payload);
+        data=JSON.parse(data);
+        if (data.message=='error')
+        {
+          window.alert("error uploading image");
+          return;
+        }
+        var resp = {"id": id.substring(1),"type":"image","content":String(data.url)};
+        content.append(resp);
+
+      }
+      if (blockType=="table")
+      {
+        var tableRows =parseInt(document.getElementById(id+"RT").value);
+        var tableCols =parseInt(document.getElementById(id+"CT").value);
+        var arr = []
+        for (var i = 1 ; i< tableRows+1;i++)
+        {
+          for (var j = 1 ; j< tableCols+1; j++)
+          {
+
+            var tableInput = document.getElementById(id+ "T"+ String(i) + ":" + String(j));
+            arr.append(String(tableInput.value));
+          }
+        }
+        var resp ={"id": id.substring(1),"type":"table","content":{"rows":String(tableRows),"cols":String(tableCols),"values":arr}};
+        content.append(resp);
+
+      }
+      if (blockType=="chart")
+      {
+        var selectedTicker = document.getElementById(id+"TS");
+        selectedTicker=selectedTicker.options[selectedTicker.selectedIndex].value;
+        var selectedStartDate= document.getElementById(id+"DF").value;
+        selectedStartDate=String(selectedStartDate).replace("/","-").replace("/","-");
+        var selectedEndDate= document.getElementById(id+"DT").value;
+        selectedEndDate=String(selectedEndDate).replace("/","-").replace("/","-");
+        var currentURL = window.location.href;
+        var xmlhttp = new XMLHttpRequest();
+        var url = String(currentURL)+"chart_create/?ticker="+String(selectedTicker)+"&start_date="+String(selectedStartDate)+"&end_date="+String(selectedEndDate);
+        var data={};
+        xmlhttp.onreadystatechange = function() {if (this.readyState == 4 && this.status == 200) {data = JSON.parse(this.responseText);}};
+        xmlhttp.open("GET", url, false);
+        xmlhttp.send();
+        data=JSON.parse(data);
+
+        var resp = {"id": id.substring(1),"type":"chart","content":{"datefrom":String(selectedStartDate),"dateto":String(selectedEndDate),"ticker":String(selectedTicker),"chartid":data.id}};
+
+        content.append(resp);
+
+      }
+      
+
+    }
+  }
+  var req = {"message":"save blog","data": content};
+  chatSocket.send(JSON.stringify(req));
+  window.location.replace(window.location.host+"/view/"+ String(window.location.pathname).substring(-25) );
+
+}
 
 
   const chatSocket = new WebSocket(
     'ws://'
     + window.location.host
     + '/ws/'
-    + String(window.location.pathname).substring(11) 
+    + String(window.location.pathname).substring(-25) 
 );
 chatSocket.onopen= function(e){
+  chatSocket.send(Json.stringify({"message":"get title"}));
   chatSocket.send(JSON.stringify({"message":"get draft"}));
 }
 chatSocket.onmessage = function(e) {
@@ -957,7 +1100,7 @@ chatSocket.onmessage = function(e) {
     var count = Object.keys(data).length;
     for (var i = 0;i<count;i++)
     {
-      
+      if (data[i].type=='title'){document.getElementById('title_input').value=data[i].content;}
       if (data[i].type=='text')
       {
         addBlock();

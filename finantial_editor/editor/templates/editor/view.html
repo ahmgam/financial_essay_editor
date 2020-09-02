@@ -1,0 +1,83 @@
+{% load static %}
+<html lang="en">
+<head>
+  <title>{{title}}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="{% static 'viewPageScript.js' %}"></script>
+
+
+</head>
+<body>
+<h1>{{title}}</h1>
+<div id="blocks" class="container-fluid" style="margin: 10px;">
+ 
+
+      <!-- Or you can comment out a large number of lines. -->
+
+    {% for block in content %}
+     
+    {% if block.type=="text"%}
+     <div class="row" style="background-color:lavender;margin: 10px;border-radius: 10px;">{{block.content}}</div>
+    {% endif %}
+
+    {% if block.type=="image"%}
+     <div class="row" style="background-color:lavender;margin: 10px;border-radius: 10px;"><img src="{{block.content}}"></img></div>
+
+    {% endif %}
+
+    {% if block.type=="table"%}
+    <table class="table">
+    <thead>
+     {%for i in range(0,int(block.content.rows))%}
+     <tr>
+    {% if i ==0%}
+      <th scope="col">#</th>
+      {% else%}
+        <th scope="row">{{i}}</th>
+
+     {%endif%}
+        {% for j in range(0,int(block.content.cols))%}
+        <td>{{block.content.values[i*int(block.content.rows)+j]}}</td>
+
+        {% endfor %}
+        </tr>
+     {% if i ==0%}
+       </thead>
+       <tbody>
+     {%endif%}
+     {% endfor %}
+
+  </tbody>
+</table>
+    {% endif %}
+    
+    {% if block.type=="chart"%}
+    <div class="row" style="background-color:lavender;margin: 10px;border-radius: 10px;">
+    <div id="E{{block.id}}CC"></div>
+    <div id="E{{ block.id}}VC"></div>
+    <script>
+    
+   render_chart({{block.id}} ,JSON.parse({{block.content.data}}));
+
+
+    </script>
+    </div>
+    {% endif %}
+
+
+
+
+    {% endfor %}
+
+
+
+</div>
+
+
+</body>
+</html>
