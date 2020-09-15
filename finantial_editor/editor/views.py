@@ -7,7 +7,7 @@ from djongo.models.fields import ObjectId
 from datetime import datetime 
 import json
 from bson.objectid import ObjectId
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from .models import BlogContent,DraftContent,ChartData
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -19,6 +19,7 @@ from django.views.generic.edit import DeleteView
 
 logger = logging.getLogger(__name__)
 # Create your views here.
+@login_required(login_url=reverse_lazy('login')) #redirect when user is not logged in
 def createBlog (request):
     user = User.objects.get(pk=request.user.id)
     blog = BlogContent.objects.create(author=str(user.username),authorId=user.pk,published=False)
@@ -26,6 +27,7 @@ def createBlog (request):
 
     return redirect(str(draft.pk)+'/')
 
+@login_required(login_url=reverse_lazy('login')) #redirect when user is not logged in
 def index(request,pk):
     pk=pk.replace('/','')
     b_type = ''
@@ -48,7 +50,7 @@ def index(request,pk):
     return HttpResponseRedirect('home/blogcontent_list.html')
     
     
-
+@login_required(login_url=reverse_lazy('login')) #redirect when user is not logged in
 def preview_chart(request):
     
     start_date,end_date,ticker,stock="","","",""
@@ -71,7 +73,7 @@ def preview_chart(request):
     
     return JsonResponse(getData(start_date,end_date,stock,ticker),safe=False)
     
-
+@login_required(login_url=reverse_lazy('login')) #redirect when user is not logged in
 def create_chart(request):
     
     start_date,end_date,ticker,stock="","","",""
@@ -96,6 +98,7 @@ def create_chart(request):
         
     return JsonResponse(json.dump({"id":str(chart.pk)}),safe=False)
 
+@login_required(login_url=reverse_lazy('login')) #redirect when user is not logged in
 def getData(start_date,end_date,stock,ticker):
     res=[]
     
@@ -153,7 +156,7 @@ def processData (route):
 
     return totalData
 
-
+@login_required(login_url=reverse_lazy('login')) #redirect when user is not logged in
 def image_upload(request):
     if request.method == 'POST' :
         
@@ -187,6 +190,7 @@ def viewBlog(request,pk):
     
     return render(request,"home/view.html",payload)
 
+@login_required(login_url=reverse_lazy('login')) #redirect when user is not logged in
 def deleteBlog(request,pk):
     pk = str(pk).replace("/","")
     try:
@@ -197,6 +201,8 @@ def deleteBlog(request,pk):
             return HttpResponseRedirect("home/dashboard.html")
     except:
         return HttpResponseRedirect("home/dashboard.html")
+
+@login_required(login_url=reverse_lazy('login')) #redirect when user is not logged in
 def deleteDraft(request,pk):
     pk = str(pk).replace("/","")
     try:

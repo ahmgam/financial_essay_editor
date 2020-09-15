@@ -42,7 +42,6 @@ Stored data shape :
 - for table blocks : 
 {'id': number,
 'type':'table',
-'content':{
   'rows':number,
   'cols':number,
   'values':[n, n ,...]}
@@ -50,12 +49,11 @@ Stored data shape :
 - for chart :
   {'id': number,
 'type': 'chart',
-'content':{
   'datefrom': Date,
   'dateto': Date,
   'ticker': ticker,
   'chartid': ChartData.id (null for draft)
-}}
+}
 */
 var tickers = [['Microsoft Corp',  'MSFT'],
 [ 'Apple Inc',  'AAPL'],
@@ -99,7 +97,7 @@ function titleDone()
 
   d.style.display="none";
   c.style.display="block";
-  c.value=d.value;
+  c.innerText=d.value;
   document.getElementById("title_done").style.display="none";
   document.getElementById("title_edit").style.display="block";
   var resp = {"message":"save title","data":String(d.value)};
@@ -243,19 +241,23 @@ function doneBlock(m)
           var content = document.getElementById(id+"BI");
           var prev = document.getElementById(id+"PA");
           var img = document.createElement("img");
+          img.id=id+"IM";
           var fReader = new FileReader();
           fReader.readAsDataURL(content.files[0]);
-          
+          var img_path ="";
           //img.setAttribute("src",content.value);
           if (prev.childElementCount==1){prev.firstChild.remove();}
-          fReader.onloadend = function(event){img.src = event.target.result;}
-          if (typeof img.naturalWidth != "undefined" && img.naturalWidth == 0) 
+          fReader.onloadend = function(event){
+            img_path=event.target.result;
+            img.src = img_path;
+            prev.appendChild(img);
+          }
+          if (typeof img.naturalWidth == "undefined" && img.naturalWidth == 0) 
             {
               window.alert("image is not loaded properly, check the selected file");
               return;
             }
-          prev.appendChild(img);
-          var resp = {"message":"save draft","data":{"id": id.substring(1),"type":"image","content":String(img.src)}};
+          var resp = {"message":"save draft","data":{"id": id.substring(1),"type":"image","content":img_path}};
           chatSocket.send(JSON.stringify(resp));
           var d = document.querySelector("#"+id+"ME");
           d.style.display="none";
@@ -294,7 +296,7 @@ function doneBlock(m)
               }
               myCol.appendChild(document.createTextNode(tableInput.value));
               myRow.appendChild(myCol);
-              arr.append(String(tableInput.value));
+              arr.push(String(tableInput.value));
             }
             if (i==1)
             {
@@ -310,7 +312,7 @@ function doneBlock(m)
           tableEditArea.appendChild(myTable);
           document.getElementById(id+"ME").style.display="none";
           document.getElementById(id+"MP").style.display="block";
-          var resp = {"message":"save table","data":{"id": id.substring(1),"type":"table","content":{"rows":String(tableRows),"cols":String(tableCols),"values":arr}}};
+          var resp = {"message":"save draft","data":{"id": id.substring(1),"type":"table","rows":String(tableRows),"cols":String(tableCols),"values":arr}};
           chatSocket.send(JSON.stringify(resp));
         }
         if (mode=="chart")
@@ -347,7 +349,7 @@ function doneBlock(m)
           }
           else 
           {
-            var resp = {"message":"save draft","data":{"id": id.substring(1),"type":"chart","content":{"datefrom":String(selectedStartDate),"dateto":String(selectedEndDate),"ticker":String(selectedTicker),"chartid":""}}};
+            var resp = {"message":"save draft","data":{"id": id.substring(1),"type":"chart","datefrom":String(selectedStartDate),"dateto":String(selectedEndDate),"ticker":String(selectedTicker),"chartid":""}};
             chatSocket.send(JSON.stringify(resp));
             var options = {
               series: [ {
@@ -481,7 +483,7 @@ function doneBlock(m)
         }
     }
 
-function addBlock(){
+function addBlock(passedId=""){
 
         c=document.querySelector("#blocks").childElementCount;
         if (c!=0)
@@ -491,6 +493,7 @@ function addBlock(){
         c = parseInt(last_id);
 
         }
+        if (passedId!=""){c=parseInt(passedId)-1;}
         //create box 
         var newele= document.createElement("DIV");
         newele.id="E"+String(c+1);
@@ -589,7 +592,7 @@ function addBlock(){
 
         }
 
-function addImage()
+function addImage(passedId="")
 {
   c=document.querySelector("#blocks").childElementCount;
   if (c!=0)
@@ -599,6 +602,7 @@ function addImage()
   c = parseInt(last_id);
 
   }
+  if (passedId!=""){c=parseInt(passedId)-1;}
   //create box 
   var newele= document.createElement("DIV");
   newele.id="E"+String(c+1);
@@ -693,7 +697,7 @@ function addImage()
         document.querySelector("#blocks").append(newele);
 }
 
-function addTable()
+function addTable(passedId="")
  {
   c=document.querySelector("#blocks").childElementCount;
   if (c!=0)
@@ -702,6 +706,7 @@ function addTable()
   last_id= last_id.substring(1,last_id.length);
   c = parseInt(last_id);
   }
+  if (passedId!=""){c=parseInt(passedId)-1;}
   //create box 
   var newele= document.createElement("DIV");
   newele.id="E"+String(c+1);
@@ -829,7 +834,7 @@ function addTable()
 
  }
 
- function addChart()
+ function addChart(passedId="")
  {
   c=document.querySelector("#blocks").childElementCount;
   if (c!=0)
@@ -838,6 +843,7 @@ function addTable()
   last_id= last_id.substring(1,last_id.length);
   c = parseInt(last_id);
   }
+  if (passedId!=""){c=parseInt(passedId)-1;}
   //create box 
   var newele= document.createElement("DIV");
   newele.id="E"+String(c+1);
@@ -1084,14 +1090,14 @@ function publishBlog()
     'ws://'
     + window.location.host
     + '/ws/'
-    + String(window.location.pathname).substring(-25) 
+    + String(window.location.pathname).slice(11) 
 );
 chatSocket.onopen= function(e){
-  chatSocket.send(Json.stringify({"message":"get title"}));
+  chatSocket.send(JSON.stringify({"message":"get title"}));
   chatSocket.send(JSON.stringify({"message":"get draft"}));
 }
 chatSocket.onmessage = function(e) {
-    const data = JSON.parse(e);
+    var data = JSON.parse(e.data);
     var turndownService = new TurndownService();
     data=data.sort(function(a, b)
  {
@@ -1103,23 +1109,28 @@ chatSocket.onmessage = function(e) {
       if (data[i].type=='title'){document.getElementById('title_input').value=data[i].content;}
       if (data[i].type=='text')
       {
-        addBlock();
-        blockid='E'+ document.querySelector('#blocks').lastElementChild.id;
-        document.getElementById(blockid+'TX').value=turndownService.turndown(data[i].content);
+        addBlock(data[i].id);
+        blockid= document.querySelector('#blocks').lastElementChild.id;
+        document.getElementById(blockid+'TX').value=String(turndownService.turndown(data[i].content));
+        /*        var blockid;
+        if (document.querySelector('#blocks').childElementCount==0){blockid="E1";}
+        else{blockid='E'+ document.querySelector('#blocks').lastElementChild.id;} */
       }
       if (data[i].type=='image')
       {
-        addImage();
-        blockid='E'+ document.querySelector('#blocks').lastElementChild.id;
-        document.getElementById(blockid+'MP').href=data[i].content;
+        addImage(data[i].id);
+        blockid=document.querySelector('#blocks').lastElementChild.id;
         document.getElementById(blockid+'MP').style.display='block';
         document.getElementById(blockid+'ME').style.display='none';
+        img = document.createElement('img');
+        img.src=data[i].content;
+        document.getElementById(blockid+'MP').appendChild(img);
 
       }
       if (data[i].type=='table')
       {
-        addTable();
-        blockid='E'+ document.querySelector('#blocks').lastElementChild.id;
+        addTable(data[i].id);
+        blockid=document.querySelector('#blocks').lastElementChild.id;
         document.getElementById(blockid+'RT').value=data[i].content.rows;
         document.getElementById(blockid+'CT').value=data[i].content.cols;
         createTable(document.getElementById(blockid+'CB'))
@@ -1137,20 +1148,15 @@ chatSocket.onmessage = function(e) {
       }
       if (data[i].type=='chart')
       {
-        addChart();
-        blockid='E'+ document.querySelector('#blocks').lastElementChild.id;
+        addChart(data[i].id);
+        blockid=document.querySelector('#blocks').lastElementChild.id;
         document.getElementById(blockid+'TS').options.selection=data[i].content.ticker;
         document.getElementById(blockid+'DF').value=data[i].content.datefrom;
         document.getElementById(blockid+'DT').value=data[i].content.dateto;
       }
-      
-    
-      value=e[i].content;
-      document.getElementById('E'+String(key))
 
     }
     
-    document.querySelector('#chat-log').value += (data.message + '\n');
 };
 
 chatSocket.onclose = function(e) {
