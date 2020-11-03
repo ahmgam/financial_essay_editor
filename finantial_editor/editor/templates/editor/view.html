@@ -1,4 +1,10 @@
 {% load static %}
+{% load range %} 
+{% load plus %} 
+{% load product %} 
+{% load arrayReturn %} 
+
+
 <html lang="en">
 <head>
   <title>{{title}}</title>
@@ -21,32 +27,33 @@
 
     {% for block in content %}
      
-    {% if block.type=="text"%}
-     <div class="row" style="background-color:lavender;margin: 10px;border-radius: 10px;">{{block.content}}</div>
+    {% if block.type == 'text'%}
+     <div class="row" style="background-color:lavender;margin: 10px;border-radius: 10px;">{{block.content|safe}}</div>
     {% endif %}
 
-    {% if block.type=="image"%}
+    {% if block.type == "image"%}
      <div class="row" style="background-color:lavender;margin: 10px;border-radius: 10px;"><img src="{{block.content}}"></img></div>
 
     {% endif %}
 
-    {% if block.type=="table"%}
+    {% if block.type == "table"%}
     <table class="table">
     <thead>
-     {%for i in range(0,int(block.content.rows))%}
+     {%for i in block.rows|range  %}
      <tr>
-    {% if i ==0%}
+    {% if i == 0%}
       <th scope="col">#</th>
       {% else%}
         <th scope="row">{{i}}</th>
 
      {%endif%}
-        {% for j in range(0,int(block.content.cols))%}
-        <td>{{block.content.values[i*int(block.content.rows)+j]}}</td>
+        {% for j in block.cols|range %}
+
+        <td>{{ block.values|arrayReturn:block.rows|product:i|plus:j}}</td>
 
         {% endfor %}
         </tr>
-     {% if i ==0%}
+     {% if i == 0%}
        </thead>
        <tbody>
      {%endif%}
@@ -56,13 +63,14 @@
 </table>
     {% endif %}
     
-    {% if block.type=="chart"%}
+    {% if block.type == "chart"%}
     <div class="row" style="background-color:lavender;margin: 10px;border-radius: 10px;">
     <div id="E{{block.id}}CC"></div>
     <div id="E{{ block.id}}VC"></div>
     <script>
-    
-   render_chart({{block.id}} ,JSON.parse({{block.content.data}}));
+    i={{block.id}};
+    dat={{block.chartid|safe}};
+   render_chart( i,dat);
 
 
     </script>

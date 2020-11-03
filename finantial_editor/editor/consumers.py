@@ -1,9 +1,17 @@
 
 import json
 from channels.generic.websocket import WebsocketConsumer
-from editor.models import BlogContent,ChartData,DraftContent
+from editor.models import BlogContent,ChartData,DraftContent,ChartData
 import logging
 from djongo.models.fields import ObjectId
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+import base64
+import random
+import string
+from datetime import datetime 
+from io import BytesIO
+from editor.views import getData, processData
 logger = logging.getLogger(__name__)
 
 
@@ -36,7 +44,7 @@ class DraftConsumer(WebsocketConsumer):
         pass
 
     def receive(self, text_data):
-        logger.error(str(text_data)+ ", type : "+str(type(text_data)))
+        #logger.error(str(text_data)+ ", type : "+str(type(text_data)))
         #text_data_json = json.loads(text_data)
         #message = text_data_json['message']
         json_data = json.loads(text_data)
@@ -70,11 +78,39 @@ class DraftConsumer(WebsocketConsumer):
                     x.remove(block)
             blog.draft =  x 
         if message=="save blog":
-           myblog = BlogContent(blog.ref) 
-           myblog.title= json_data['data'][0]['content']
-           myblog.content=json_data['data'][1:]
+           myblog = blog.ref
+           myblog.title=blog.title
+           myblog.content=blog.content
            myblog.published=True
            myblog.save()
+        if message=="save image":
+            logger.error("saving image ")
+            myfilebytes = json_data['imgdata']
+            myfile=BytesIO(base64.b64decode(myfilebytes))
+            name=""
+            for i in range (15):
+                name = name + random.choice(string.ascii_lowercase)
+            fs = FileSystemStorage()
+            filename = fs.save(name+'.jpg', myfile)
+            uploaded_file_url = fs.url(filename)
+            #logger.error("saved with link"+uploaded_file_url)
+
+            x =blog.content
+            for block in x:
+                if block['id'] == json_data['id']:
+                    block['content']=uploaded_file_url
+            blog.content =  x 
+        if message=="save chart":
+            s_date = datetime.strptime(json_data["start_date"], '%m-%d-%Y').strftime('%Y-%m-%d')
+            e_date = datetime.strptime(json_data["end_date"], '%m-%d-%Y').strftime('%Y-%m-%d')
+            ticker = json_data["ticker"]
+            data = getData(s_date,e_date,"",ticker)
+            chart = ChartData.objects.create(data=json.loads(data))
+            x =blog.content
+            for block in x:
+                if block['id'] == json_data['id']:
+                    block["chartid"] = str(chart.pk)
+            blog.content =  x
         blog.save()
 
         

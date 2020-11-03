@@ -1,6 +1,7 @@
 
 function render_chart(id ,data)
 {
+
     id = "E"+String(id);
     var options = {
         series: [ {

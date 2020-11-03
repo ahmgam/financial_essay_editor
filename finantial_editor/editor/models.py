@@ -28,6 +28,7 @@ class DraftContent(models.Model):
         app_label = 'article'
 
 class ChartData (models.Model):
+    _id = models.ObjectIdField()
     data= models.JSONField()
     class Meta:        
         app_label = 'article'

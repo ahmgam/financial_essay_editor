@@ -335,17 +335,16 @@ function doneBlock(m)
           selectedStartDate=String(selectedStartDate).replace("/","-").replace("/","-");
           var selectedEndDate= document.getElementById(id+"DT").value;
           selectedEndDate=String(selectedEndDate).replace("/","-").replace("/","-");
-          var currentURL = window.location.href;
+          var currentURL = window.location.host;
           var xmlhttp = new XMLHttpRequest();
-          var url = String(currentURL)+"chart_preview/?ticker="+String(selectedTicker)+"&start_date="+String(selectedStartDate)+"&end_date="+String(selectedEndDate);
+          var url ="http://" +String(currentURL)+"/blog/chart_preview/?ticker="+String(selectedTicker)+"&start_date="+String(selectedStartDate)+"&end_date="+String(selectedEndDate);
           var data={};
           xmlhttp.onreadystatechange = function() {if (this.readyState == 4 && this.status == 200) {data = JSON.parse(this.responseText);}};
           xmlhttp.open("GET", url, false);
           xmlhttp.send();
-          data=JSON.parse(data);
-          if ("error" in data)
+          if (data.error)
           {
-            window.alert("error getting data")
+            window.alert("error getting data" + String(data.error))
           }
           else 
           {
@@ -992,8 +991,9 @@ function publishBlog()
   var blocks = document.getElementById("blocks");
   if (blocks.childElementCount==0){window.alert("there is no blocks in blog, write something to save");}
   else {
-    var tit = {"id":"0","type":"title","content": document.getElementById("title").innerText};
-    content.append(tit);
+    var title =String(document.getElementById("title").innerText);
+    var tit = {"id":"0","type":"title","content":title};
+    content.push(tit);
     for (var i =0;i<blocks.childElementCount;i++)
     {
       var child = blocks.children[i];
@@ -1004,11 +1004,7 @@ function publishBlog()
         break;
       }
       var blockType = child.getAttribute("data");
-      if (blockType=="text")
-      {
-        var resp = {"id": id.substring(1),"type":"text","content":String(document.getElementById(id+"PA").innerHTML).replace(/"/g, "'")};
-        content.append(resp);
-      }
+
       if (blockType=="image")
       {
         var imgElem = document.getElementById(id+"PA").firstChild
@@ -1018,41 +1014,12 @@ function publishBlog()
         var ctx = canvas.getContext("2d");
         ctx.drawImage(imgElem, 0, 0);
         var dataURL = canvas.toDataURL("image/png");
-        var payload = {"imgdata":dataURL.replace(/^data:image\/(png|jpg);base64,/, "")};
-        var xmlhttp = new XMLHttpRequest();
-        var url = String(window.location.host)+"blog/uploadimg/";
-        var data={};
-        xmlhttp.onreadystatechange = function() {if (this.readyState == 4 && this.status == 200) {data = JSON.parse(this.responseText);}};
-        xmlhttp.open("POST", url, false);
-        xmlhttp.send(payload);
-        data=JSON.parse(data);
-        if (data.message=='error')
-        {
-          window.alert("error uploading image");
-          return;
-        }
-        var resp = {"id": id.substring(1),"type":"image","content":String(data.url)};
-        content.append(resp);
+        var payload = {"message":"save image","id":id.substring(1),"imgdata":dataURL.replace(/^data:image\/(png|jpg);base64,/, "")};
+        chatSocket.send(JSON.stringify(payload));
+        while (chatSocket.readyState==true){}
 
       }
-      if (blockType=="table")
-      {
-        var tableRows =parseInt(document.getElementById(id+"RT").value);
-        var tableCols =parseInt(document.getElementById(id+"CT").value);
-        var arr = []
-        for (var i = 1 ; i< tableRows+1;i++)
-        {
-          for (var j = 1 ; j< tableCols+1; j++)
-          {
 
-            var tableInput = document.getElementById(id+ "T"+ String(i) + ":" + String(j));
-            arr.append(String(tableInput.value));
-          }
-        }
-        var resp ={"id": id.substring(1),"type":"table","content":{"rows":String(tableRows),"cols":String(tableCols),"values":arr}};
-        content.append(resp);
-
-      }
       if (blockType=="chart")
       {
         var selectedTicker = document.getElementById(id+"TS");
@@ -1061,27 +1028,16 @@ function publishBlog()
         selectedStartDate=String(selectedStartDate).replace("/","-").replace("/","-");
         var selectedEndDate= document.getElementById(id+"DT").value;
         selectedEndDate=String(selectedEndDate).replace("/","-").replace("/","-");
-        var currentURL = window.location.href;
-        var xmlhttp = new XMLHttpRequest();
-        var url = String(currentURL)+"chart_create/?ticker="+String(selectedTicker)+"&start_date="+String(selectedStartDate)+"&end_date="+String(selectedEndDate);
-        var data={};
-        xmlhttp.onreadystatechange = function() {if (this.readyState == 4 && this.status == 200) {data = JSON.parse(this.responseText);}};
-        xmlhttp.open("GET", url, false);
-        xmlhttp.send();
-        data=JSON.parse(data);
-
-        var resp = {"id": id.substring(1),"type":"chart","content":{"datefrom":String(selectedStartDate),"dateto":String(selectedEndDate),"ticker":String(selectedTicker),"chartid":data.id}};
-
-        content.append(resp);
+        chatSocket.send(JSON.stringify({"message":"save chart","id":id.substring(1),"start_date":selectedStartDate,"end_date":selectedEndDate,"ticker":selectedTicker}));
+        while (chatSocket.readyState==true){}
 
       }
       
 
     }
   }
-  var req = {"message":"save blog","data": content};
-  chatSocket.send(JSON.stringify(req));
-  window.location.replace(window.location.host+"/view/"+ String(window.location.pathname).substring(-25) );
+  chatSocket.send(JSON.stringify({"message":"save blog"}));
+  window.location.href="http://"+window.location.host+"/blog/view/"+ String(window.location.pathname).slice(11) ;
 
 }
 
@@ -1131,16 +1087,17 @@ chatSocket.onmessage = function(e) {
       {
         addTable(data[i].id);
         blockid=document.querySelector('#blocks').lastElementChild.id;
-        document.getElementById(blockid+'RT').value=data[i].content.rows;
-        document.getElementById(blockid+'CT').value=data[i].content.cols;
-        createTable(document.getElementById(blockid+'CB'))
-        r= parseInt(data[i].content.rows);
-        c=parseInt(data[i].content.cols);
+        document.getElementById(blockid+'RT').value=data[i].rows;
+        document.getElementById(blockid+'CT').value=data[i].cols;
+        createTable(document.getElementById(blockid+'CB'));
+        r= parseInt(data[i].rows);
+        c=parseInt(data[i].cols);
+        var inputArray=data[i].values;
         for (var i =1;i<r+1;i++)
         {
           for (var j =1;j<c+1;j++)
           {
-            document.getElementById(blockid+'T'+String(i)+':'+String(j)).value=data[i].content.table[(i-1)*c + j-1];
+            document.getElementById(blockid+'T'+String(i)+':'+String(j)).value=inputArray[(i-1)*c + j-1];
           }
         }
 
@@ -1149,10 +1106,14 @@ chatSocket.onmessage = function(e) {
       if (data[i].type=='chart')
       {
         addChart(data[i].id);
-        blockid=document.querySelector('#blocks').lastElementChild.id;
-        document.getElementById(blockid+'TS').options.selection=data[i].content.ticker;
-        document.getElementById(blockid+'DF').value=data[i].content.datefrom;
-        document.getElementById(blockid+'DT').value=data[i].content.dateto;
+        blockid=data[i].id
+        var sel = 0;
+        for (var t =0;t<tickers.length;t++) 
+        {if (tickers[t][1]==data[i].ticker){sel =t;}}
+        
+        document.getElementById(blockid+'TS').selectedIndex=sel;
+        document.getElementById(blockid+'DF').value=data[i].datefrom;
+        document.getElementById(blockid+'DT').value=data[i].dateto;
       }
 
     }
